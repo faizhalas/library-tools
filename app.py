@@ -1,27 +1,27 @@
 #import module
-import random
-
-import gensim
-import matplotlib.pyplot as plt
-import nltk
-import numpy as np
-import pandas as pd
-import pyLDAvis.gensim_models
-import regex
-import seaborn as sns
 import streamlit as st
-from gensim import corpora
-from gensim.models import CoherenceModel
-from gensim.utils import simple_preprocess
-from nltk.corpus import stopwords
-import streamlit.components.v1 as components
-#from sklearn.decomposition import PCA
-#from sklearn.manifold import TSNE
-from umap import UMAP
-from wordcloud import WordCloud
-import matplotlib.colors as mcolors
-import plotly.express as px
+import pandas as pd
+import numpy as np
 import re
+import nltk
+nltk.download('wordnet')
+from nltk.stem import WordNetLemmatizer
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+import gensim
+import gensim.corpora as corpora
+from gensim.corpora import Dictionary
+from gensim.models.coherencemodel import CoherenceModel
+from gensim.models.ldamodel import LdaModel
+from pprint import pprint
+import spacy
+import pickle
+import pyLDAvis
+import pyLDAvis.gensim_models as gensimvis
+#pyLDAvis.enable_notebook()
+import matplotlib.pyplot as plt
+import pyLDAvis.gensim_models
+import streamlit.components.v1 as components
 
 
 #title
@@ -71,7 +71,7 @@ if uploaded_file is not None:
     #LDA
     lda_model = LdaModel(corpus=corpus,
                    id2word=id2word,
-                   num_topics=2, #num of topic
+                   num_topics=5, #num of topic
                    random_state=0,
                    chunksize=100,
                    alpha='auto',
@@ -81,8 +81,14 @@ if uploaded_file is not None:
     doc_lda = lda_model[corpus]
 
     #coherence score
-    coherence_model_lda = CoherenceModel(model=lda_model, texts=topic_abs, dictionary=id2word, coherence='c_v')
-    coherence_lda = coherence_model_lda.get_coherence()
-    st.write(coherence_lda)
+    #coherence_model_lda = CoherenceModel(model=lda_model, texts=topic_abs, dictionary=id2word, coherence='c_v')
+    #coherence_lda = coherence_model_lda.get_coherence()
+    #st.write(coherence_lda)
 
+if st.button('Generate pyLDAvis'):
+            with st.spinner('Creating pyLDAvis Visualization ...'):
+                vis = pyLDAvis.gensim_models.prepare(lda_model, corpus, id2word)
+                py_lda_vis_html = pyLDAvis.prepared_data_to_html(vis)
+                components.html(py_lda_vis_html, width=1500, height=800)
+                st.markdown('https://github.com/bmabey/pyLDAvis')
 
