@@ -18,7 +18,6 @@ import spacy
 import pickle
 import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
-#pyLDAvis.enable_notebook()
 import matplotlib.pyplot as plt
 import pyLDAvis.gensim_models
 import streamlit.components.v1 as components
