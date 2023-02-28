@@ -1,26 +1,26 @@
 #import module
-import streamlit as st
-import pandas as pd
-import numpy as np
-import re
-import nltk
-nltk.download('wordnet')
-from nltk.stem import WordNetLemmatizer
-nltk.download('stopwords')
-from nltk.corpus import stopwords
+import random
+
 import gensim
-import gensim.corpora as corpora
-from gensim.corpora import Dictionary
-from gensim.models.coherencemodel import CoherenceModel
-from gensim.models.ldamodel import LdaModel
-from pprint import pprint
-import spacy
-import pickle
-import pyLDAvis
-import pyLDAvis.gensim_models as gensimvis
-#pyLDAvis.enable_notebook()
 import matplotlib.pyplot as plt
+import nltk
+import numpy as np
+import pandas as pd
 import pyLDAvis.gensim_models
+import regex
+import seaborn as sns
+import streamlit as st
+from gensim import corpora
+from gensim.models import CoherenceModel
+from gensim.utils import simple_preprocess
+from nltk.corpus import stopwords
+import streamlit.components.v1 as components
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from umap import UMAP
+from wordcloud import WordCloud
+import matplotlib.colors as mcolors
+import plotly.express as px
 
 
 #title
