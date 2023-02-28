@@ -15,8 +15,8 @@ from gensim.models import CoherenceModel
 from gensim.utils import simple_preprocess
 from nltk.corpus import stopwords
 import streamlit.components.v1 as components
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
+#from sklearn.decomposition import PCA
+#from sklearn.manifold import TSNE
 from umap import UMAP
 from wordcloud import WordCloud
 import matplotlib.colors as mcolors
