@@ -93,6 +93,7 @@ with tab2:
             "scopus.csv",
             "text/csv",
             key='download-csv')
+        st.error('There is an error, please check', icon="🚨")
 
 
 
@@ -166,6 +167,7 @@ with tab3:
                    py_lda_vis_html = pyLDAvis.prepared_data_to_html(vis)
                    components.html(py_lda_vis_html, width=1700, height=800)
                    st.markdown('👍 find out https://github.com/bmabey/pyLDAvis')
+   st.error('There is an error, please check', icon="🚨")
 
 with tab4:
    st.header("About")
