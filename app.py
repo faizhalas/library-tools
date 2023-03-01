@@ -29,7 +29,7 @@ st.set_page_config(layout="wide")
 st.title('Coconut Library Tools')
 
 #page
-tab1, tab2, tab3 = st.tabs(["Home", "Stem", "LDA"])
+tab1, tab2, tab3, tab4 = st.tabs(["Home", "Stem", "LDA", "About"])
 
 with tab1:
    st.header("How to use")
@@ -107,3 +107,13 @@ with tab3:
                    components.html(py_lda_vis_html, width=1700, height=800)
                    st.markdown('https://github.com/bmabey/pyLDAvis')
 
+with tab4:
+   st.header("About")
+   st.subheader('Contributors')
+   st.write('Faizhal Arif Santosa, (you can be a part of this app)')
+
+   st.subheader('Involving')
+   st.write('If you interested to develop this program, please contact me')   
+
+   st.subheader('Citation')
+   st.write('If you interested to develop this program, please contact me') 
