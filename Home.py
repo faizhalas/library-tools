@@ -1,181 +1,74 @@
 #import module
 import streamlit as st
-import pandas as pd
-import numpy as np
-import re
-import nltk
-nltk.download('wordnet')
-from nltk.stem import WordNetLemmatizer
-nltk.download('stopwords')
-from nltk.corpus import stopwords
-import gensim
-import gensim.corpora as corpora
-from gensim.corpora import Dictionary
-from gensim.models.coherencemodel import CoherenceModel
-from gensim.models.ldamodel import LdaModel
-from pprint import pprint
-import spacy
-import pickle
-import pyLDAvis
-import pyLDAvis.gensim_models as gensimvis
-import matplotlib.pyplot as plt
-import streamlit.components.v1 as components
-from io import StringIO
-from nltk.stem.snowball import SnowballStemmer
+from PIL import Image
 
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+     page_title="Coconut",
+     page_icon="🥥",
+     layout="wide"
+)
 
 #title
-st.title('Coconut Library Tools')
+st.title('🥥 Coconut Library Tools')
+st.sidebar.success('Select page above')
 
 #page
-tab1, tab2, tab3, tab4 = st.tabs(["Home", "Keywords Stem", "Topic Modelling", "About"])
+tab1, tab2, tab3 = st.tabs(["About", "How to", "Behind this app"])
 
 with tab1:
-   st.header("How to use")
-   st.image("https://static.streamlit.io/examples/cat.jpg", width=200)
+   st.header("🌌 Hello universe!")
+   st.write('The coconut tree is known as one of the most useful trees. 🌴 The leaves function to produce oxygen through photosynthesis and are used for handicrafts, even for roof houses. The shells, the oil, the wood, the flowers, or even the husks can be something useful. From this philosophy, the Coconut Library Tool aims to be useful for librarians or anyone who needs cool features but is hindered by programming languages.')
+   st.write("We thank the cool people who have created so many facilities that we can place them in a place. We can't name them all, but we believe science will advance as a result of your efforts. 🧑🏻‍🤝‍🧑🏾")
 
-
-
+        
+        
 with tab2:
-   st.header("Keywords Stem")
+   st.header("Before you start")
+   option = st.selectbox(
+    'Please choose....',
+    ('Keyword Stem', 'Topic Modeling', 'Association Rules'))
    
-   #subhead
-   st.subheader('Put your CSV file and choose method')
-
-   file_key = st.file_uploader("Choose your a file")
-
-   method = st.selectbox(
-       'Choose method',
-      ('Stemming', 'Lemmatization'))
+   if option == 'Keyword Stem':
+        st.write('💡 The idea came from this:')
+        st.write('(Published soon) Santosa, F. A. (2022). Prior steps into knowledge mapping: Text mining application and comparison. Issues in Science and Technology Librarianship, 102. https://doi.org/10.29173/istl2736')
+        if st.button('🌟 Show me'):
+            st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
+            st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
+            st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
+            st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
+            st.text("3. Now you need to select what kind of keywords do you need.")
+            st.error("All the rows don't contain keywords will be deleted.", icon="🚨")
+            st.text("4. Finally, you can download and use the file on VOSviewer, Bibliometrix, or else!")
+            
+   elif option == 'Topic Modeling':
+        st.write('💡 The idea came from this:')
+        st.write('Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and interpreting topics. In Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Association for Computational Linguistics. https://doi.org/10.3115/v1/w14-3110')
+        if st.button('🌟 Show me'):
+            st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu. We use abstract column for this process.")
+            st.text("2. Click calculate coherence to know the best score for your data.")
+            st.text("3. Finally, you can visualize your data.")
+            st.error("This app include lemmatization and stopwords for the abstract text. Currently we only offer English word. For another languages you can use stemming.", icon="💬")
+            st.error("If you want to see topic on another data (chats, questionnaire, or other text), just change the column name of your table into 'Abstract' or use the other tool that we offer.", icon="🚨")
+                         
+   elif option == 'Association Rules':
+        st.write('💡 The idea came from this:')
+        st.write('Agrawal, R., Imieliński, T., & Swami, A. (1993). Mining association rules between sets of items in large databases. In ACM SIGMOD Record (Vol. 22, Issue 2, pp. 207–216). Association for Computing Machinery (ACM). https://doi.org/10.1145/170036.170072')
+        if st.button('🌟 Show me'):
+            st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
+            st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
+            st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
+            st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
+            st.text("3. Choose the value of Support and Confidence. If you're not sure how to use it please read the article above or just try it!")
+            st.text('4. Click "Show Table" to see detailed about the result')
+            st.text('5. Click "Show Table" to see the network.')
+            st.error("The more data on your table, the more you'll see on network.", icon="🚨")
+            
    
-   keyword = st.selectbox(
-       'Choose column',
-      ('Author Keywords', 'Index Keywords'))
-
-
-   if file_key is not None:
-        papers = pd.read_csv(file_key)
-        keywords = papers.dropna(subset=[keyword])
-        datakey = keywords[keyword].map(lambda x: re.sub(' ', '_', x))
-        datakey = datakey.map(lambda x: re.sub(';_', ' ', x))
-        datakey = datakey.map(lambda x: x.lower())
-        if method is 'Lemmatization':
-             lemmatizer = WordNetLemmatizer()
-             def lemmatize_words(text):
-                words = text.split()
-                words = [lemmatizer.lemmatize(word,pos='v') for word in words]
-                return ' '.join(words)
-             datakey = datakey.apply(lemmatize_words)
-             #st.write(datakey)
-        else:
-             stemmer = SnowballStemmer("english")
-             def stem_words(text):
-               words = text.split()
-               words = [stemmer.stem(word) for word in words]
-               return ' '.join(words)
-             datakey = datakey.apply(stem_words)
-             #st.write(datakey)
-        datakey = datakey.map(lambda x: re.sub(' ', '; ', x))
-        datakey = datakey.map(lambda x: re.sub('_', ' ', x))
-        keywords[keyword] = datakey
-        st.write(keywords)
-        st.write('Congratulations! 🤩 You choose',keyword ,'with',method,'method. Now, you can easily download the result by clicking the button below')
-        
-        def convert_df(df):
-           return df.to_csv(index=False).encode('utf-8')
-
-        csv = convert_df(keywords)
-        st.download_button(
-            "Press to Download 👈",
-            csv,
-            "scopus.csv",
-            "text/csv",
-            key='download-csv')
-        #st.error('There is an error, please check', icon="🚨")
-
-
-
-
-
-
-
-
-
+ 
 with tab3:
-   st.header("pyLDA")
+   st.header("Behind this app")
+   st.subheader('Faizhal Arif Santosa')
+   st.text('Librarian. National Research and Innovation Agency.')
    
-   #subhead
-   st.subheader('Put your CSV file and click generate')
-
-   uploaded_file = st.file_uploader("Choose a file")
-   if uploaded_file is not None:
-       # Can be used wherever a "file-like" object is accepted:
-       papers = pd.read_csv(uploaded_file)
-       #st.dataframe(scopus.style.where(lambda val: '[No abstract available]' in str(val), 'color: red', subset=['Abstract']))
-       paper = papers.dropna(subset=['Abstract'])
-       paper = paper[~paper.Abstract.str.contains("No abstract available")]
-       paper = paper[~paper.Abstract.str.contains("STRAIT")]
-        
-       #mapping
-       paper['Abstract_pre'] = paper['Abstract'].map(lambda x: re.sub('[,:;\.!?•-]', '', x))
-       paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: x.lower())
-       paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: re.sub('©.*', '', x))
-        
-       #lemmatize
-       lemmatizer = WordNetLemmatizer()
-       def lemmatize_words(text):
-           words = text.split()
-           words = [lemmatizer.lemmatize(word,pos='v') for word in words]
-           return ' '.join(words)
-       paper['Abstract_lem'] = paper['Abstract_pre'].apply(lemmatize_words)
-       
-       #stopword removal
-       stop = stopwords.words('english')
-       paper['Abstract_stop'] = paper['Abstract_lem'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
-        
-       #topic
-       topic_abs = paper.Abstract_stop.values.tolist()
-       topic_abs = [t.split(' ') for t in topic_abs]
-       id2word = Dictionary(topic_abs)
-       corpus = [id2word.doc2bow(text) for text in topic_abs]
-
-       num_topic = st.slider('Choose number of topics', min_value=2, max_value=15, step=1)
-       #LDA
-       lda_model = LdaModel(corpus=corpus,
-                   id2word=id2word,
-                   num_topics=num_topic, #num of topic
-                   random_state=0,
-                   chunksize=100,
-                   alpha='auto',
-                   per_word_topics=True)
-
-       pprint(lda_model.print_topics())
-       doc_lda = lda_model[corpus]
-
-   #coherence score
-   if st.button('📐 Calculate coherence'):
-               with st.spinner('Calculating, please wait ....'):    
-                  coherence_model_lda = CoherenceModel(model=lda_model, texts=topic_abs, dictionary=id2word, coherence='c_v')
-                  coherence_lda = coherence_model_lda.get_coherence()
-                  st.write(coherence_lda)
-
-   if st.button('📈 Generate visualization'):
-               with st.spinner('Creating pyLDAvis Visualization ...'):
-                   vis = pyLDAvis.gensim_models.prepare(lda_model, corpus, id2word)
-                   py_lda_vis_html = pyLDAvis.prepared_data_to_html(vis)
-                   components.html(py_lda_vis_html, width=1700, height=800)
-                   st.markdown('👍 find out https://github.com/bmabey/pyLDAvis')
-   #st.error('There is an error, please check', icon="🚨")
-
-with tab4:
-   st.header("About")
-   st.subheader('Contributors')
-   st.write('Faizhal Arif Santosa, (you can be a part of this app)')
-
-   st.subheader('Involving')
-   st.write('If you interested to develop this program, please contact me')   
-
-   st.subheader('Citation')
-   st.write('If you interested to develop this program, please contact me') 
+   st.text('You can take a part of this journey')
