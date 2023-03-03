@@ -1,4 +1,5 @@
 pip~=23.0.1
+arulesviz~=0.0.2
 scikit-learn~=1.0.1
 gensim~=4.1.2
 matplotlib~=3.5.2
@@ -14,5 +15,7 @@ seaborn~=0.11.2
 setuptools~=58.5.3
 spacy~=3.5.0
 streamlit~=1.19.0
+streamlit-agraph=~0.0.45
 umap-learn~=0.5.2
 wordcloud~=1.8.1
+mlxtend~=0.21.0
