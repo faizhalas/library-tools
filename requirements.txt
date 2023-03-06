@@ -1,5 +1,4 @@
 pip~=23.0.1
-arulesviz~=0.0.2
 scikit-learn~=1.0.1
 gensim~=4.1.2
 matplotlib~=3.5.2
