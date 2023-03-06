@@ -80,15 +80,15 @@ if uploaded_file is not None:
     doc_lda = lda_model[corpus]
 
 #coherence score
-     if st.button('📐 Calculate coherence'):
-                 with st.spinner('Calculating, please wait ....'):    
-                    coherence_model_lda = CoherenceModel(model=lda_model, texts=topic_abs, dictionary=id2word, coherence='c_v')
-                    coherence_lda = coherence_model_lda.get_coherence()
-                    st.write(coherence_lda)
+    if st.button('📐 Calculate coherence'):
+                with st.spinner('Calculating, please wait ....'):    
+                   coherence_model_lda = CoherenceModel(model=lda_model, texts=topic_abs, dictionary=id2word, coherence='c_v')
+                   coherence_lda = coherence_model_lda.get_coherence()
+                   st.write(coherence_lda)
 
-     if st.button('📈 Generate visualization'):
-                 with st.spinner('Creating pyLDAvis Visualization ...'):
-                     vis = pyLDAvis.gensim_models.prepare(lda_model, corpus, id2word)
-                     py_lda_vis_html = pyLDAvis.prepared_data_to_html(vis)
-                     components.html(py_lda_vis_html, width=1700, height=800)
-                     st.markdown('👍 find out https://github.com/bmabey/pyLDAvis')
+    if st.button('📈 Generate visualization'):
+                with st.spinner('Creating pyLDAvis Visualization ...'):
+                    vis = pyLDAvis.gensim_models.prepare(lda_model, corpus, id2word)
+                    py_lda_vis_html = pyLDAvis.prepared_data_to_html(vis)
+                    components.html(py_lda_vis_html, width=1700, height=800)
+                    st.markdown('👍 find out https://github.com/bmabey/pyLDAvis')
