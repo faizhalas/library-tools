@@ -31,7 +31,7 @@ st.set_page_config(
      layout="wide"
 )
 st.header("pyLDA")
-st.subheader('Put your CSV file and click generate')
+st.subheader('Put your CSV file here ...')
 
 #===upload file===
 uploaded_file = st.file_uploader("Choose a file")
