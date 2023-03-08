@@ -24,8 +24,8 @@ if uploaded_file is not None:
     
     #===sunburst===
     if option == 'Sunburst':
-        MIN = papers['Year'].min()
-        MAX = papers['Year'].max()
+        MIN = int(papers['Year'].min())
+        MAX = int(papers['Year'].max())
         YEAR = st.slider('Year', min_value=MIN, max_value=MAX)
         years = list(range(YEAR[0],YEAR[1]+1))
         papers = papers.loc[papers['Year'].isin(years)]
