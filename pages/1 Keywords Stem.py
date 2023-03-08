@@ -22,20 +22,17 @@ import streamlit.components.v1 as components
 from io import StringIO
 from nltk.stem.snowball import SnowballStemmer
 
+#===config===
 st.set_page_config(
      page_title="Coconut",
      page_icon="🥥",
      layout="wide"
 )
-
-
 st.header("Keywords Stem")
-   
-#subhead
 st.subheader('Put your CSV file and choose method')
 
+#===upload===
 file_key = st.file_uploader("Choose your a file")
-
 col1, col2 = st.columns(2)
 with col1:
     method = st.selectbox(
@@ -46,13 +43,16 @@ with col2:
         'Choose column',
        ('Author Keywords', 'Index Keywords'))
 
-
+#===body===
 if file_key is not None:
      papers = pd.read_csv(file_key)
      keywords = papers.dropna(subset=[keyword])
      datakey = keywords[keyword].map(lambda x: re.sub(' ', '_', x))
+     datakey = datakey.map(lambda x: re.sub('-—–', '', x))
      datakey = datakey.map(lambda x: re.sub(';_', ' ', x))
      datakey = datakey.map(lambda x: x.lower())
+     
+     #===stem/lem===
      if method is 'Lemmatization':          
         lemmatizer = WordNetLemmatizer()
         def lemmatize_words(text):
@@ -72,9 +72,11 @@ if file_key is not None:
      datakey = datakey.map(lambda x: re.sub(' ', '; ', x))
      datakey = datakey.map(lambda x: re.sub('_', ' ', x))
      keywords[keyword] = datakey
+     
      st.write(keywords)
      st.write('Congratulations! 🤩 You choose',keyword ,'with',method,'method. Now, you can easily download the result by clicking the button below')
-        
+     
+     #===download csv===
      def convert_df(df):
         return df.to_csv(index=False).encode('utf-8')
 
