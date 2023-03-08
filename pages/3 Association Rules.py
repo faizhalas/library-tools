@@ -24,7 +24,7 @@ st.set_page_config(
      layout="wide"
 )
 st.header("AR for Keywords")
-st.subheader('Put your CSV file and click generate')
+st.subheader('Put your CSV file here ...')
 
 #===Read data===
 uploaded_file = st.file_uploader("Choose a file")
