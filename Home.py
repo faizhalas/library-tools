@@ -2,27 +2,23 @@
 import streamlit as st
 from PIL import Image
 
-
+#===config===
 st.set_page_config(
      page_title="Coconut",
      page_icon="🥥",
      layout="wide"
 )
-
-#title
 st.title('🥥 Coconut Library Tools')
 st.sidebar.success('Select page above')
 
-#page
+#===page===
 tab1, tab2, tab3 = st.tabs(["About", "How to", "Behind this app"])
 
 with tab1:
    st.header("🌌 Hello universe!")
    st.write('The coconut tree is known as one of the most useful trees. 🌴 The leaves function to produce oxygen through photosynthesis and are used for handicrafts, even for roof houses. The shells, the oil, the wood, the flowers, or even the husks can be something useful. From this philosophy, the Coconut Library Tool aims to be useful for librarians or anyone who needs cool features but is hindered by programming languages.')
    st.write("We thank the cool people who have created so many facilities that we can place them in a place. We can't name them all, but we believe science will advance due to your efforts. 🧑🏻‍🤝‍🧑🏾")
-
-        
-        
+         
 with tab2:
    st.header("Before you start")
    option = st.selectbox(
@@ -63,12 +59,9 @@ with tab2:
             st.text('4. Click "Generate visualization" to see the network')
             st.error("The more data on your table, the more you'll see on network.", icon="🚨")
             st.error("If the table contains many rows, the network will look messy. Please use it efficiently.", icon="😵")
-            
-   
- 
+  
 with tab3:
    st.header("Behind this app")
    st.subheader('Faizhal Arif Santosa')
    st.text('Librarian. National Research and Innovation Agency.')
-   
    st.text('You can take a part of this journey')
