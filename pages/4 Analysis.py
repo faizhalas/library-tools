@@ -11,8 +11,8 @@ st.set_page_config(
      page_icon="🥥",
      layout="wide"
 )
-st.header("Visualization")
-st.subheader('Put your CSV file and click generate')
+st.header("Data visualization")
+st.subheader('Put your CSV file and choose a visualization')
 
 #===body===
 uploaded_file = st.file_uploader("Choose a file")
