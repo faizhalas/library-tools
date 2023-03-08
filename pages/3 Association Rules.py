@@ -17,13 +17,12 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
+#===config===
 st.set_page_config(
      page_title="Coconut",
      page_icon="🥥",
      layout="wide"
 )
-
-
 st.header("AR for Keywords")
 st.subheader('Put your CSV file and click generate')
 
@@ -41,7 +40,7 @@ with col2:
        ('Author Keywords', 'Index Keywords'))
 
 
- 
+#===body=== 
 if uploaded_file is not None:
     papers = pd.read_csv(uploaded_file)
     arul = papers.dropna(subset=[keyword])
@@ -88,7 +87,7 @@ with col3:
         'Maximum length of the itemsets generated',
         2, 6, (2))
 
-
+#===Association rules===
 if uploaded_file is not None: 
     freq_item = fpgrowth(df, min_support=supp, use_colnames=True, max_len=maxlen)
     res = association_rules(freq_item, metric='confidence', min_threshold=conf) 
