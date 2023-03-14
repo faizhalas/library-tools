@@ -18,13 +18,16 @@ with tab1:
    st.header("🌌 Hello universe!")
    st.write('The coconut tree is known as one of the most useful trees. 🌴 The leaves function to produce oxygen through photosynthesis and are used for handicrafts, even for roof houses. The shells, the oil, the wood, the flowers, or even the husks can be something useful. From this philosophy, the Coconut Library Tool aims to be useful for librarians or anyone who needs cool features but is hindered by programming languages.')
    st.write("We thank the cool people who have created so many facilities that we can place them in a place. We can't name them all, but we believe science will advance due to your efforts. 🧑🏻‍🤝‍🧑🏾")
+   st.text('')
+   st.text('')
+   st.text('')
    st.error("Currently, this app only works on Scopus's CSV file.", icon="🚨")
          
 with tab2:
    st.header("Before you start")
    option = st.selectbox(
     'Please choose....',
-    ('Keyword Stem', 'Topic Modeling', 'Association Rules'))
+    ('Keyword Stem', 'Topic Modeling', 'Association Rules', 'Sunburst'))
    
    if option == 'Keyword Stem':
         st.write('💡 The idea came from this:')
@@ -53,16 +56,23 @@ with tab2:
         st.write('Agrawal, R., Imieliński, T., & Swami, A. (1993). Mining association rules between sets of items in large databases. In ACM SIGMOD Record (Vol. 22, Issue 2, pp. 207–216). Association for Computing Machinery (ACM). https://doi.org/10.1145/170036.170072')
         if st.button('🌟 Show me'):
             st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
-            st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
+            st.text('2. Choose your preferable method. Picture below may help you to choose wisely.")
             st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
             st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
             st.text("3. Choose the value of Support and Confidence. If you're not sure how to use it please read the article above or just try it!")
             st.text('4. Click "Generate visualization" to see the network')
             st.error("The more data on your table, the more you'll see on network.", icon="🚨")
             st.error("If the table contains many rows, the network will look messy. Please use it efficiently.", icon="😵")
-  
+    
+   elif option == 'Sunburst':
+        st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
+        st.text("2. You can set the range of years to see how it changed.")
+        st.text("3. The sunburst have 3 levels. The inner circle is the type of data, meanwhile the middle is the source title and the outter is the year the article published.")
+        st.text("4. The size of slice is depend on total documents. The average of inner and middle level is calculated by formula below:")
+        st.caption('avg = sum(a * weights) / sum(weights)')
+     
 with tab3:
-   st.header("Behind this app")
+   st.header('Behind this app')
    st.subheader('Faizhal Arif Santosa')
    st.text('Librarian. National Research and Innovation Agency.')
    st.text('')
