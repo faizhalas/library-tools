@@ -69,6 +69,7 @@ with tab3:
    st.subheader('Crissandra George')
    st.text('Aspiring Academic Librarian and Archivist. University of Kentucky.')
    st.text('')
-   st.text('You can take a part of this journey')
+   st.text('')
+   st.text('If you want to take a part, please let us know!')
      
      
