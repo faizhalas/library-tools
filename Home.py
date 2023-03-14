@@ -69,7 +69,7 @@ with tab2:
         st.text("2. You can set the range of years to see how it changed.")
         st.text("3. The sunburst has 3 levels. The inner circle is the type of data, meanwhile, the middle is the source title and the outer is the year the article was published.")
         st.text("4. The size of the slice depends on total documents. The average of inner and middle levels is calculated by formula below:")
-        st.text(<div style="text-align: center;">avg = sum(a * weights) / sum(weights)</div>', unsafe_allow_html=True)
+        st.markdown(<div style="text-align: center;">avg = sum(a * weights) / sum(weights)</div>', unsafe_allow_html=True)
      
 with tab3:
    st.header('Behind this app')
