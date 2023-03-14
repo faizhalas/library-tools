@@ -56,7 +56,7 @@ with tab2:
         st.write('Agrawal, R., Imieliński, T., & Swami, A. (1993). Mining association rules between sets of items in large databases. In ACM SIGMOD Record (Vol. 22, Issue 2, pp. 207–216). Association for Computing Machinery (ACM). https://doi.org/10.1145/170036.170072')
         if st.button('🌟 Show me'):
             st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
-            st.text('2. Choose your preferable method. Picture below may help you to choose wisely.")
+            st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
             st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
             st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
             st.text("3. Choose the value of Support and Confidence. If you're not sure how to use it please read the article above or just try it!")
