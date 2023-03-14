@@ -32,7 +32,7 @@ st.header("Keywords Stem")
 st.subheader('Put your CSV file and choose method')
 
 #===upload===
-file_key = st.file_uploader("Choose your a file")
+papers = st.file_uploader("Choose your a file")
 col1, col2 = st.columns(2)
 with col1:
     method = st.selectbox(
@@ -44,8 +44,8 @@ with col2:
        ('Author Keywords', 'Index Keywords'))
 
 #===body===
-if file_key is not None:
-     papers = pd.read_csv(file_key)
+if papers is not None:
+     papers = pd.read_csv(papers)
      keywords = papers.dropna(subset=[keyword])
      datakey = keywords[keyword].map(lambda x: re.sub(' ', '_', x))
      datakey = datakey.map(lambda x: re.sub('-—–', '', x))
