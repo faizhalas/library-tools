@@ -65,6 +65,10 @@ with tab3:
    st.header("Behind this app")
    st.subheader('Faizhal Arif Santosa')
    st.text('Librarian. National Research and Innovation Agency.')
+   st.text('')
+   st.subheader('Crissandra George')
+   st.text('Aspiring Academic Librarian and Archivist. University of Kentucky.')
+   st.text('')
    st.text('You can take a part of this journey')
      
      
