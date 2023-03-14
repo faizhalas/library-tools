@@ -33,7 +33,7 @@ with tab2:
         st.write('💡 The idea came from this:')
         st.write('(Published soon) Santosa, F. A. (2022). Prior steps into knowledge mapping: Text mining application and comparison. Issues in Science and Technology Librarianship, 102. https://doi.org/10.29173/istl2736')
         if st.button('🌟 Show me'):
-            st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
+            st.text("1. Put your Scopus CSV file.")
             st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
             st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
             st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
@@ -45,7 +45,7 @@ with tab2:
         st.write('💡 The idea came from this:')
         st.write('Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and interpreting topics. In Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Association for Computational Linguistics. https://doi.org/10.3115/v1/w14-3110')
         if st.button('🌟 Show me'):
-            st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu. We use abstract column for this process.")
+            st.text("1. Put your Scopus CSV file. We use abstract column for this process.")
             st.text("2. Click calculate coherence to know the best score for your data.")
             st.text("3. Finally, you can visualize your data.")
             st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words. For other languages you can use stemming.", icon="💬")
@@ -55,7 +55,7 @@ with tab2:
         st.write('💡 The idea came from this:')
         st.write('Agrawal, R., Imieliński, T., & Swami, A. (1993). Mining association rules between sets of items in large databases. In ACM SIGMOD Record (Vol. 22, Issue 2, pp. 207–216). Association for Computing Machinery (ACM). https://doi.org/10.1145/170036.170072')
         if st.button('🌟 Show me'):
-            st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
+            st.text("1. Put your Scopus CSV file.")
             st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
             st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
             st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
@@ -65,11 +65,11 @@ with tab2:
             st.error("If the table contains many rows, the network will look messy. Please use it efficiently.", icon="😵")
     
    elif option == 'Sunburst':
-        st.text("1. Put your Scopus CSV file. If it's not Scopus CSV file, you can use CSV converter on the menu")
+        st.text("1. Put your Scopus CSV file.")
         st.text("2. You can set the range of years to see how it changed.")
-        st.text("3. The sunburst have 3 levels. The inner circle is the type of data, meanwhile the middle is the source title and the outter is the year the article published.")
-        st.text("4. The size of slice is depend on total documents. The average of inner and middle level is calculated by formula below:")
-        st.caption('avg = sum(a * weights) / sum(weights)')
+        st.text("3. The sunburst has 3 levels. The inner circle is the type of data, meanwhile, the middle is the source title and the outer is the year the article was published.")
+        st.text("4. The size of the slice depends on total documents. The average of inner and middle levels is calculated by formula below:")
+        st.text(<div style="text-align: center;">avg = sum(a * weights) / sum(weights)</div>', unsafe_allow_html=True)
      
 with tab3:
    st.header('Behind this app')
