@@ -40,6 +40,6 @@ if uploaded_file is not None:
         fig.update_layout(height=800, width=1200)
         st.plotly_chart(fig, height=800, width=1200) #use_container_width=True)
     else:
-        st.error('We require this columns: Document Type, Source title, Cited by, Year', icon="🚨")
+        st.error('We require these columns: Document Type, Source title, Cited by, Year', icon="🚨")
             
    
