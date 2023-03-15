@@ -114,7 +114,7 @@ if uploaded_file is not None:
                                labelHighlightBold=True,
                                group=x,
                                opacity=10,
-                               fixed=True,
+                               #fixed=True,
                                mass=1,
                                image="https://upload.wikimedia.org/wikipedia/commons/f/f1/Eo_circle_yellow_circle.svg") 
                         )   
@@ -124,7 +124,7 @@ if uploaded_file is not None:
                                 target=z,
                                 title=b,
                                 physics=True,
-                                smooth=True,
+                                smooth=True
                                 ) 
                         )  
 
@@ -133,6 +133,7 @@ if uploaded_file is not None:
                             directed=True, 
                             physics=True, 
                             hierarchical=False,
+                            maxVelocity=5
                             )
 
             return_value = agraph(nodes=nodes, 
