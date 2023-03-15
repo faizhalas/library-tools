@@ -62,7 +62,7 @@ with tab2:
             st.text("3. Choose the value of Support and Confidence. If you're not sure how to use it please read the article above or just try it!")
             st.text('4. Click "Generate visualization" to see the network')
             st.error("The more data on your table, the more you'll see on network.", icon="🚨")
-            st.error("If the table contains many rows, the network will look messy. Please use it efficiently.", icon="😵")
+            st.error("If the table contains many rows, the network will take more time to process. Please use it efficiently.", icon="😵")
     
    elif option == 'Sunburst':
         st.text("1. Put your Scopus CSV file.")
