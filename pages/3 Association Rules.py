@@ -112,7 +112,7 @@ if uploaded_file is not None:
             st.plotly_chart(fig, use_container_width=True)
       
          #===visualize===       
-         if st.button('📈 Generate visualization'):
+         if st.button('📈 Generate network visualization'):
              with st.spinner('Visualizing, please wait ....'): 
                  res['to'] = res['antecedents'] + ' → ' + res['consequents'] + '\n Support = ' +  res['support'].astype(str) + '\n Confidence = ' +  res['confidence'].astype(str) + '\n Lift = ' +  res['lift'].astype(str)
                  res_node=pd.concat([res['antecedents'],res['consequents']])
