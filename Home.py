@@ -60,16 +60,17 @@ with tab2:
             st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
             st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
             st.text("3. Choose the value of Support and Confidence. If you're not sure how to use it please read the article above or just try it!")
-            st.text('4. Click "Generate visualization" to see the network')
+            st.text("4. You can see the table and a simple visualization before making a network visualization.")
+            st.text('5. Click "Generate network visualization" to see the network')
             st.error("The more data on your table, the more you'll see on network.", icon="🚨")
-            st.error("If the table contains many rows, the network will take more time to process. Please use it efficiently.", icon="😵")
+            st.error("If the table contains many rows, the network will take more time to process. Please use it efficiently.", icon="⌛")
     
    elif option == 'Sunburst':
         st.text("1. Put your Scopus CSV file.")
         st.text("2. You can set the range of years to see how it changed.")
         st.text("3. The sunburst has 3 levels. The inner circle is the type of data, meanwhile, the middle is the source title and the outer is the year the article was published.")
         st.text("4. The size of the slice depends on total documents. The average of inner and middle levels is calculated by formula below:")
-        st.markdown('<div style="text-align: center;">avg = sum(a * weights) / sum(weights)</div>', unsafe_allow_html=True)
+        st.code('avg = sum(a * weights) / sum(weights)', language='python')
      
 with tab3:
    st.header('Behind this app')
