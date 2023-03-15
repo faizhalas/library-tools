@@ -16,6 +16,7 @@ from nltk.stem import WordNetLemmatizer
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
+import plotly.express as px
 
 #===config===
 st.set_page_config(
