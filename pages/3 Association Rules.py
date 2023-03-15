@@ -98,51 +98,61 @@ if uploaded_file is not None:
          res = res[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
          res['antecedents'] = res['antecedents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
          res['consequents'] = res['consequents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
-         st.dataframe(res, width=None)
+         col1, col2 = st.columns(2)
+         with col1:
+            st.dataframe(res, use_container_width=True)
+         with col2:
+            res3d = res
+            res3d['link'] = res3d['antecedents'] + ' → ' + res3d['consequents']
+            fig = px.scatter(res3d, x='support', y='confidence', color='lift', 
+                size='lift', hover_data=['link'], 
+                marginal_x='histogram', marginal_y='violin')
+            fig.update_layout(showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
       
-    #===visualize===       
-    if st.button('📈 Generate visualization'):
-        with st.spinner('Visualizing, please wait ....'): 
-            res['to'] = res['antecedents'] + ' → ' + res['consequents'] + '\n Support = ' +  res['support'].astype(str) + '\n Confidence = ' +  res['confidence'].astype(str) + '\n Lift = ' +  res['lift'].astype(str)
-            res_node=pd.concat([res['antecedents'],res['consequents']])
-            res_node = res_node.drop_duplicates(keep='first')
-            
-            nodes = []
-            edges = []
-            
-            for x in res_node:
-                nodes.append( Node(id=x, 
-                               label=x,
-                               size=10,
-                               shape="circularImage",
-                               labelHighlightBold=True,
-                               group=x,
-                               opacity=10,
-                               #fixed=True,
-                               mass=1,
-                               image="https://upload.wikimedia.org/wikipedia/commons/f/f1/Eo_circle_yellow_circle.svg") 
-                        )   
+         #===visualize===       
+         if st.button('📈 Generate visualization'):
+             with st.spinner('Visualizing, please wait ....'): 
+                 res['to'] = res['antecedents'] + ' → ' + res['consequents'] + '\n Support = ' +  res['support'].astype(str) + '\n Confidence = ' +  res['confidence'].astype(str) + '\n Lift = ' +  res['lift'].astype(str)
+                 res_node=pd.concat([res['antecedents'],res['consequents']])
+                 res_node = res_node.drop_duplicates(keep='first')
 
-            for y,z,a,b in zip(res['antecedents'],res['consequents'],res['lift'],res['to']):
-                edges.append( Edge(source=y, 
-                                target=z,
-                                title=b,
-                                physics=True,
-                                smooth=True
-                                ) 
-                        )  
+                 nodes = []
+                 edges = []
 
-            config = Config(width=1200,
-                            height=800,
-                            directed=True, 
-                            physics=True, 
-                            hierarchical=False,
-                            maxVelocity=5
-                            )
+                 for x in res_node:
+                     nodes.append( Node(id=x, 
+                                    label=x,
+                                    size=10,
+                                    shape="circularImage",
+                                    labelHighlightBold=True,
+                                    group=x,
+                                    opacity=10,
+                                    #fixed=True,
+                                    mass=1,
+                                    image="https://upload.wikimedia.org/wikipedia/commons/f/f1/Eo_circle_yellow_circle.svg") 
+                             )   
 
-            return_value = agraph(nodes=nodes, 
-                                  edges=edges, 
-                                  config=config)
+                 for y,z,a,b in zip(res['antecedents'],res['consequents'],res['lift'],res['to']):
+                     edges.append( Edge(source=y, 
+                                     target=z,
+                                     title=b,
+                                     physics=True,
+                                     smooth=True
+                                     ) 
+                             )  
+
+                 config = Config(width=1200,
+                                 height=800,
+                                 directed=True, 
+                                 physics=True, 
+                                 hierarchical=False,
+                                 maxVelocity=5
+                                 )
+
+                 return_value = agraph(nodes=nodes, 
+                                       edges=edges, 
+                                       config=config)
  
  
  
