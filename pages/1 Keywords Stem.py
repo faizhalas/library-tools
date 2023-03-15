@@ -87,6 +87,3 @@ if uploaded_file is not None:
          "scopus.csv",
          "text/csv",
          key='download-csv')
-  
-else:
-     st.warning('You need to upload a CSV file.')
