@@ -77,15 +77,15 @@ col1, col2, col3 = st.columns(3)
 with col1:
     supp = st.slider(
         'Select value of Support',
-        0.00, 1.00, (0.04))
+        0.001, 1.000, (0.040))
 with col2:
     conf = st.slider(
         'Select value of Confidence',
-        0.00, 1.00, (0.07))
+        0.001, 1.00, (0.070))
 with col3:
     maxlen = st.slider(
         'Maximum length of the itemsets generated',
-        2, 6, (2))
+        2, 8, (2))
 
 #===Association rules===
 if uploaded_file is not None: 
