@@ -48,7 +48,7 @@ if uploaded_file is not None:
      papers = pd.read_csv(uploaded_file)
      keywords = papers.dropna(subset=[keyword])
      datakey = keywords[keyword].map(lambda x: re.sub(' ', '_', x))
-     datakey = datakey.map(lambda x: re.sub('-—–', '', x))
+     datakey = datakey.map(lambda x: re.sub('-—–', '_', x))
      datakey = datakey.map(lambda x: re.sub(';_', ' ', x))
      datakey = datakey.map(lambda x: x.lower())
      
