@@ -78,11 +78,11 @@ col1, col2, col3 = st.columns(3)
 with col1:
     supp = st.slider(
         'Select value of Support',
-        0.01, 1.00, (0.04))
+        0.001, 1.000, (0.040))
 with col2:
     conf = st.slider(
         'Select value of Confidence',
-        0.01, 1.00, (0.07))
+        0.001, 1.000, (0.070))
 with col3:
     maxlen = st.slider(
         'Maximum length of the itemsets generated',
@@ -91,11 +91,14 @@ with col3:
 #===Association rules===
 if uploaded_file is not None: 
     freq_item = fpgrowth(df, min_support=supp, use_colnames=True, max_len=maxlen)
-    res = association_rules(freq_item, metric='confidence', min_threshold=conf) 
-    res = res[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
-    res['antecedents'] = res['antecedents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
-    res['consequents'] = res['consequents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
-    st.dataframe(res, width=None)
+    if freq_item.empty:
+          st.error('Please lower your value.', icon="🚨")
+    else:
+         res = association_rules(freq_item, metric='confidence', min_threshold=conf) 
+         res = res[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+         res['antecedents'] = res['antecedents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
+         res['consequents'] = res['consequents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
+         st.dataframe(res, width=None)
       
     #===visualize===       
     if st.button('📈 Generate visualization'):
