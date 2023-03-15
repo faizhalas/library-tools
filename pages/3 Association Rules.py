@@ -45,7 +45,8 @@ if uploaded_file is not None:
     papers = pd.read_csv(uploaded_file)
     arul = papers.dropna(subset=[keyword])
      
-    arul[keyword] = arul[keyword].map(lambda x: re.sub('[(),:&\.!?•-]', '', x))
+    arul[keyword] = arul[keyword].map(lambda x: re.sub('[(),:&\.!?•]', '', x))
+    arul[keyword] = arul[keyword].map(lambda x: re.sub('-', '_', x))
     arul[keyword] = arul[keyword].map(lambda x: re.sub(' ', '_', x))
     arul[keyword] = arul[keyword].map(lambda x: re.sub(';_', ' ', x))
     arul[keyword] = arul[keyword].map(lambda x: x.lower())
@@ -77,11 +78,11 @@ col1, col2, col3 = st.columns(3)
 with col1:
     supp = st.slider(
         'Select value of Support',
-        0.001, 1.000, (0.040))
+        0.01, 1.00, (0.04))
 with col2:
     conf = st.slider(
         'Select value of Confidence',
-        0.001, 1.00, (0.070))
+        0.01, 1.00, (0.07))
 with col3:
     maxlen = st.slider(
         'Maximum length of the itemsets generated',
