@@ -50,7 +50,7 @@ if uploaded_file is not None:
     lemmatizer = WordNetLemmatizer()
     def lemmatize_words(text):
         words = text.split()
-        words = [lemmatizer.lemmatize(word,pos='v') for word in words]
+        words = [lemmatizer.lemmatize(word) for word in words]
         return ' '.join(words)
     paper['Abstract_lem'] = paper['Abstract_pre'].apply(lemmatize_words)
        
@@ -68,7 +68,7 @@ if uploaded_file is not None:
     #===LDA===
     lda_model = LdaModel(corpus=corpus,
                 id2word=id2word,
-                num_topics=num_topic, #num of topic
+                num_topics=num_topic, 
                 random_state=0,
                 chunksize=100,
                 alpha='auto',
