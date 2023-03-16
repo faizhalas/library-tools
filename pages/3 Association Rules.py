@@ -57,7 +57,7 @@ if uploaded_file is not None:
         lemmatizer = WordNetLemmatizer()
         def lemmatize_words(text):
              words = text.split()
-             words = [lemmatizer.lemmatize(word,pos='v') for word in words]
+             words = [lemmatizer.lemmatize(word) for word in words]
              return ' '.join(words)
         arul[keyword] = arul[keyword].apply(lemmatize_words)
              
@@ -129,7 +129,6 @@ if uploaded_file is not None:
                                     labelHighlightBold=True,
                                     group=x,
                                     opacity=10,
-                                    #fixed=True,
                                     mass=1,
                                     image="https://upload.wikimedia.org/wikipedia/commons/f/f1/Eo_circle_yellow_circle.svg") 
                              )   
