@@ -38,8 +38,8 @@ with tab2:
             st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
             st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
             st.text("3. Now you need to select what kind of keywords you need.")
-            st.error("All the rows that don't contain keywords will be deleted.", icon="🚨")
             st.text("4. Finally, you can download and use the file on VOSviewer, Bibliometrix, or else!")
+            st.error("Please check what has changed. It's possible some keywords failed to find their roots.", icon="🚨")
             
    elif option == 'Topic Modeling':
         st.write('💡 The idea came from this:')
