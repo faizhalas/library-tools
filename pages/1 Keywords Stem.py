@@ -85,7 +85,7 @@ if uploaded_file is not None:
              "text/csv")
           
      with col2:
-         keywords[keyx] = keywords[keyx].str.replace('nan','')
+         keywords[keyword] = keywords[keyword].str.replace('nan','')
          key = key.drop(['index'], axis=1).rename(columns={0: "old"})
          st.write(key, use_container_width=True)
                   
