@@ -46,10 +46,8 @@ if uploaded_file is not None:
     papers = pd.read_csv(uploaded_file)
     arul = papers.dropna(subset=[keyword])
      
-    arul[keyword] = arul[keyword].map(lambda x: re.sub('[(),:&\.!?•]', '', x))
-    arul[keyword] = arul[keyword].map(lambda x: re.sub('-', '_', x))
-    arul[keyword] = arul[keyword].map(lambda x: re.sub(' ', '_', x))
-    arul[keyword] = arul[keyword].map(lambda x: re.sub(';_', ' ', x))
+    arul[keyword] = arul[keyword].map(lambda x: re.sub('-—–', ' ', x))
+    arul[keyword] = arul[keyword].map(lambda x: re.sub('; ', ' ; ', x))
     arul[keyword] = arul[keyword].map(lambda x: x.lower())
     
     #===stem/lem===
@@ -68,6 +66,9 @@ if uploaded_file is not None:
             words = [stemmer.stem(word) for word in words]
             return ' '.join(words)
         arul[keyword] = arul[keyword].apply(stem_words)
+    
+    arul[keyword] = arul[keyword].map(lambda x: re.sub(' ', '_', x))
+    arul[keyword] = arul[keyword].map(lambda x: re.sub('_;_', ' ', x))
      
     #tokenize
     arul = arul.apply(lambda row: nltk.word_tokenize(row[keyword]), axis=1)
