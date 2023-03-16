@@ -48,7 +48,7 @@ if uploaded_file is not None:
      key = key.dropna()
      key = pd.concat([key.str.split('; ', expand=True)], axis=1)
      key = pd.Series(np.ravel(key)).dropna().drop_duplicates().sort_values().reset_index()
-     key['new']=key[0]
+     key['new']=key[0].map(lambda x: x.lower())
            
      #===stem/lem===
      if method is 'Lemmatization':          
