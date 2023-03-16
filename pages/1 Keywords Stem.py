@@ -38,12 +38,12 @@ with col2:
 #===body===
 if uploaded_file is not None:
      keywords = pd.read_csv(uploaded_file)
-     keywords[keyx] = keywords[keyx].astype(str)
-     keywords[keyx] = keywords[keyx].map(lambda x: re.sub('-—–', ' ', x))
-     keywords[keyx] = keywords[keyx].map(lambda x: x.lower())
+     keywords[keyword] = keywords[keyword].astype(str)
+     keywords[keyword] = keywords[keyword].map(lambda x: re.sub('-—–', ' ', x))
+     keywords[keyword] = keywords[keyword].map(lambda x: x.lower())
      
      #===Keywords list===
-     key = keywords[keyx]
+     key = keywords[keyword]
      key = key.dropna()
      key = pd.concat([key.str.split('; ', expand=True)], axis=1)
      key = pd.Series(np.ravel(key)).dropna().drop_duplicates().sort_values().reset_index()
@@ -56,7 +56,7 @@ if uploaded_file is not None:
              words = text.split()
              words = [lemmatizer.lemmatize(word) for word in words]
              return ' '.join(words)
-        keywords[keyx] = keywords[keyx].apply(lemmatize_words)
+        keywords[keyword] = keywords[keyword].apply(lemmatize_words)
         key['new'] = key['new'].apply(lemmatize_words)
              
      else:
@@ -68,7 +68,7 @@ if uploaded_file is not None:
         keywords[keyx] = keywords[keyx].apply(stem_words)
         key['new'] = key['new'].apply(stem_words)
      
-     st.write('Congratulations! 🤩 You choose',keyx ,'with',method,'method. Now, you can easily download the result by clicking the button below')
+     st.write('Congratulations! 🤩 You choose',keyword ,'with',method,'method. Now, you can easily download the result by clicking the button below')
      
      #===show & download csv===
      col1, col2 = st.columns(2)
