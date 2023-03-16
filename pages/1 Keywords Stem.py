@@ -38,7 +38,6 @@ with col2:
 #===body===
 if uploaded_file is not None:
      keywords = pd.read_csv(uploaded_file)
-     keywords = keywords.replace(np.nan, '', regex=True)
      keywords[keyword] = keywords[keyword].astype(str)
      keywords[keyword] = keywords[keyword].map(lambda x: re.sub('-—–', ' ', x))
      keywords[keyword] = keywords[keyword].map(lambda x: x.lower())
@@ -49,6 +48,9 @@ if uploaded_file is not None:
      key = pd.concat([key.str.split('; ', expand=True)], axis=1)
      key = pd.Series(np.ravel(key)).dropna().drop_duplicates().sort_values().reset_index()
      key['new']=key[0]
+     
+     #===replace nan===
+     keywords = keywords.replace(np.nan, '', regex=True)
      
      #===stem/lem===
      if method is 'Lemmatization':          
