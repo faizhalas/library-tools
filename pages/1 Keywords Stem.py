@@ -65,7 +65,7 @@ if uploaded_file is not None:
             words = text.split()
             words = [stemmer.stem(word) for word in words]
             return ' '.join(words)
-        keywords[keyx] = keywords[keyx].apply(stem_words)
+        keywords[keyword] = keywords[keyword].apply(stem_words)
         key['new'] = key['new'].apply(stem_words)
      
      st.write('Congratulations! 🤩 You choose',keyword ,'with',method,'method. Now, you can easily download the result by clicking the button below')
