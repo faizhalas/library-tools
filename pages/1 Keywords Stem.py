@@ -85,7 +85,7 @@ if uploaded_file is not None:
              "text/csv")
           
      with col2:
-         keywords[keyword] = keywords[keyword].map(lambda x: re.sub('nan', '', x))
+         keywords = keywords.dropna(subset=[keyword])
          key = key.drop(['index'], axis=1).rename(columns={0: 'old'})
          st.write(key, use_container_width=True)
                   
