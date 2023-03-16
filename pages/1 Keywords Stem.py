@@ -42,6 +42,7 @@ if uploaded_file is not None:
      keywords = keywords.replace(np.nan, '', regex=True)
      keywords[keyword] = keywords[keyword].astype(str)
      keywords[keyword] = keywords[keyword].map(lambda x: re.sub('-—–', ' ', x))
+     keywords[keyword] = keywords[keyword].map(lambda x: re.sub('; ', ' ; ', x))
      keywords[keyword] = keywords[keyword].map(lambda x: x.lower())
      
      #===Keywords list===
@@ -69,6 +70,7 @@ if uploaded_file is not None:
         keywords[keyword] = keywords[keyword].apply(stem_words)
         key['new'] = key['new'].apply(stem_words)
      
+     keywords[keyword] = keywords[keyword].map(lambda x: re.sub(' ; ', '; ', x))
      st.write('Congratulations! 🤩 You choose',keyword ,'with',method,'method. Now, you can easily download the result by clicking the button below')
      
      #===show & download csv===
