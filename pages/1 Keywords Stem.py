@@ -38,6 +38,7 @@ with col2:
 #===body===
 if uploaded_file is not None:
      keywords = pd.read_csv(uploaded_file)
+     keywords = keywords.dropna(subset=[keyword])
      keywords[keyword] = keywords[keyword].astype(str)
      keywords[keyword] = keywords[keyword].map(lambda x: re.sub('-—–', ' ', x))
      keywords[keyword] = keywords[keyword].map(lambda x: x.lower())
@@ -85,7 +86,6 @@ if uploaded_file is not None:
              "text/csv")
           
      with col2:
-         keywords = keywords.dropna(subset=[keyword])
          key = key.drop(['index'], axis=1).rename(columns={0: 'old'})
          st.write(key, use_container_width=True)
                   
