@@ -51,8 +51,9 @@ with tab2:
             st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words. For other languages you can use stemming.", icon="💬")
             st.error("If you want to see the topic on another data (chats, questionnaire, or other text), change the column name of your table to 'Abstract' or use the other tool that we offer.", icon="🚨")
                          
-   elif option == 'Association Rules':
-        st.write('💡 The idea came from this:')
+   elif option == 'Bidirected Network':
+        st.write('💡 The idea came from this:') 
+        st.write('Munan Li (2016): An exploration to visualise the emerging trends of technology foresight based on an improved technique of co-word analysis and relevant literature data of WOS, Technology Analysis & Strategic Management, DOI: 10.1080/09537325.2016.1220518')
         st.write('Agrawal, R., Imieliński, T., & Swami, A. (1993). Mining association rules between sets of items in large databases. In ACM SIGMOD Record (Vol. 22, Issue 2, pp. 207–216). Association for Computing Machinery (ACM). https://doi.org/10.1145/170036.170072')
         if st.button('🌟 Show me'):
             st.text("1. Put your Scopus CSV file.")
