@@ -27,7 +27,7 @@ with tab2:
    st.header("Before you start")
    option = st.selectbox(
     'Please choose....',
-    ('Keyword Stem', 'Topic Modeling', 'Association Rules', 'Sunburst'))
+    ('Keyword Stem', 'Topic Modeling', 'Bidirected Network', 'Sunburst'))
    
    if option == 'Keyword Stem':
         st.write('💡 The idea came from this:')
