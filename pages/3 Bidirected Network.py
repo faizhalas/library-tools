@@ -24,7 +24,7 @@ st.set_page_config(
      page_icon="🥥",
      layout="wide"
 )
-st.header("AR for Keywords")
+st.header("Biderected Keywords Network")
 st.subheader('Put your CSV file here ...')
 
 #===Read data===
@@ -49,7 +49,8 @@ if uploaded_file is not None:
     arul[keyword] = arul[keyword].map(lambda x: re.sub('-—–', ' ', x))
     arul[keyword] = arul[keyword].map(lambda x: re.sub('; ', ' ; ', x))
     arul[keyword] = arul[keyword].map(lambda x: x.lower())
-    
+    arul[keyword] = arul[keyword].dropna()
+        
     #===stem/lem===
     if method is 'Lemmatization':          
         lemmatizer = WordNetLemmatizer()
@@ -67,13 +68,10 @@ if uploaded_file is not None:
             return ' '.join(words)
         arul[keyword] = arul[keyword].apply(stem_words)
     
-    arul[keyword] = arul[keyword].map(lambda x: re.sub(' ', '_', x))
-    arul[keyword] = arul[keyword].map(lambda x: re.sub('_;_', ' ', x))
-     
-    #tokenize
-    arul = arul.apply(lambda row: nltk.word_tokenize(row[keyword]), axis=1)
-    arul = arul.values.tolist()
-    te_ary = te.fit(arul).transform(arul)
+    arule = arul[keyword].str.split(' ; ')
+    arule_list = arule.values.tolist()
+         
+    te_ary = te.fit(arule_list).transform(arule_list)
     df = pd.DataFrame(te_ary, columns=te.columns_)
     
 col1, col2, col3 = st.columns(3)
@@ -97,25 +95,16 @@ if uploaded_file is not None:
           st.error('Please lower your value.', icon="🚨")
     else:
          res = association_rules(freq_item, metric='confidence', min_threshold=conf) 
-         res = res[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+         #res = res[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
          res['antecedents'] = res['antecedents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
          res['consequents'] = res['consequents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
-         col1, col2 = st.columns(2)
-         with col1:
-            st.dataframe(res, use_container_width=True)
-         with col2:
-            res3d = res
-            res3d['link'] = res3d['antecedents'] + ' → ' + res3d['consequents']
-            fig = px.scatter(res3d, x='support', y='confidence', color='lift', 
-                size='lift', hover_data=['link'], 
-                marginal_x='histogram', marginal_y='violin')
-            fig.update_layout(showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
-      
-         #===visualize===       
+         st.dataframe(res, use_container_width=True)
+               
+         #===visualize===
+            
          if st.button('📈 Generate network visualization'):
              with st.spinner('Visualizing, please wait ....'): 
-                 res['to'] = res['antecedents'] + ' → ' + res['consequents'] + '\n Support = ' +  res['support'].astype(str) + '\n Confidence = ' +  res['confidence'].astype(str) + '\n Lift = ' +  res['lift'].astype(str)
+                 res['to'] = res['antecedents'] + ' → ' + res['consequents'] + '\n Support = ' +  res['support'].astype(str) + '\n Confidence = ' +  res['confidence'].astype(str) + '\n Conviction = ' +  res['conviction'].astype(str)
                  res_node=pd.concat([res['antecedents'],res['consequents']])
                  res_node = res_node.drop_duplicates(keep='first')
 
@@ -134,10 +123,11 @@ if uploaded_file is not None:
                                     image="https://upload.wikimedia.org/wikipedia/commons/f/f1/Eo_circle_yellow_circle.svg") 
                              )   
 
-                 for y,z,a,b in zip(res['antecedents'],res['consequents'],res['lift'],res['to']):
+                 for y,z,a,b in zip(res['antecedents'],res['consequents'],res['confidence'],res['to']):
                      edges.append( Edge(source=y, 
                                      target=z,
                                      title=b,
+                                     width=a*2,
                                      physics=True,
                                      smooth=True
                                      ) 
@@ -154,10 +144,3 @@ if uploaded_file is not None:
                  return_value = agraph(nodes=nodes, 
                                        edges=edges, 
                                        config=config)
- 
- 
- 
- 
- 
- 
- 
