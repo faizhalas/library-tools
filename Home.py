@@ -31,7 +31,7 @@ with tab2:
    
    if option == 'Keyword Stem':
         st.write('💡 The idea came from this:')
-        st.write('(Published soon) Santosa, F. A. (2022). Prior steps into knowledge mapping: Text mining application and comparison. Issues in Science and Technology Librarianship, 102. https://doi.org/10.29173/istl2736')
+        st.write('Santosa, F. A. (2022). Prior steps into knowledge mapping: Text mining application and comparison. Issues in Science and Technology Librarianship, 102. https://doi.org/10.29173/istl2736')
         if st.button('🌟 Show me'):
             st.text("1. Put your Scopus CSV file.")
             st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
