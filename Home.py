@@ -46,10 +46,10 @@ with tab2:
         st.write('Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and interpreting topics. In Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Association for Computational Linguistics. https://doi.org/10.3115/v1/w14-3110')
         if st.button('🌟 Show me'):
             st.text("1. Put your Scopus CSV file. We use abstract column for this process.")
-            st.text("2. Click calculate coherence to know the best score for your data.")
+            st.text("2. Choose your preferred method.")
             st.text("3. Finally, you can visualize your data.")
             st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words. For other languages you can use stemming.", icon="💬")
-            st.error("If you want to see the topic on another data (chats, questionnaire, or other text), change the column name of your table to 'Abstract' or use the other tool that we offer.", icon="🚨")
+            st.error("If you want to see the topic on another data (chats, questionnaire, or other text), change the column name of your table to 'Abstract'.", icon="🚨")
                          
    elif option == 'Bidirected Network':
         st.write('💡 The idea came from this:') 
@@ -76,12 +76,16 @@ with tab2:
 with tab3:
    st.header('Behind this app')
    st.subheader('Faizhal Arif Santosa')
-   st.text('Librarian. National Research and Innovation Agency.')
+   st.text('Librarian. Polytechnic Institute of Nuclear Technology, National Research and Innovation Agency.')
    st.text('')
    st.subheader('Crissandra George')
    st.text('Aspiring Academic Librarian and Archivist. University of Kentucky.')
    st.text('')
+   st.divider()
+   st.header('Advisor')
+   st.subheader('Dr. Manika Lamba')
+   st.text('Elected Standing Committee Member & Chair of Professional Development Sub-Committee at IFLA STL Section | Editor-in-Chief for IJLIS (IGI Global).')
    st.text('')
+   st.text('')
+   st.divider()
    st.text('If you want to take a part, please let us know!')
-     
-     
