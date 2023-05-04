@@ -18,3 +18,5 @@ streamlit-agraph
 umap-learn
 wordcloud
 mlxtend
+bertopic
+ipywidgets
