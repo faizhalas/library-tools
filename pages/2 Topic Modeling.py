@@ -100,19 +100,17 @@ if uploaded_file is not None:
                  st.markdown('Copyright (c) 2015, Ben Mabey. https://github.com/bmabey/pyLDAvis')
 
          with tab2:
-             with st.spinner('Calculating, please wait ....'):
-                 st.markdown('**Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and interpreting topics. Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces.** https://doi.org/10.3115/v1/w14-3110')
+             st.markdown('**Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and interpreting topics. Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces.** https://doi.org/10.3115/v1/w14-3110')
 
          with tab3:
-             with st.spinner('Calculating, please wait ....'):
-                 st.markdown('**Chen, X., & Wang, H. (2019, January). Automated chat transcript analysis using topic modeling for library reference services. Proceedings of the Association for Information Science and Technology, 56(1), 368–371.** https://doi.org/10.1002/pra2.31')
-                 st.markdown('**Joo, S., Ingram, E., & Cahill, M. (2021, December 15). Exploring Topics and Genres in Storytime Books: A Text Mining Approach. Evidence Based Library and Information Practice, 16(4), 41–62.** https://doi.org/10.18438/eblip29963')
-                 st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Topic Modeling. Text Mining for Information Professionals, 105–137.** https://doi.org/10.1007/978-3-030-85085-2_4')
-                 st.markdown('**Lamba, M., & Madhusudhan, M. (2019, June 7). Mapping of topics in DESIDOC Journal of Library and Information Technology, India: a study. Scientometrics, 120(2), 477–505.** https://doi.org/10.1007/s11192-019-03137-5')
+             st.markdown('**Chen, X., & Wang, H. (2019, January). Automated chat transcript analysis using topic modeling for library reference services. Proceedings of the Association for Information Science and Technology, 56(1), 368–371.** https://doi.org/10.1002/pra2.31')
+             st.markdown('**Joo, S., Ingram, E., & Cahill, M. (2021, December 15). Exploring Topics and Genres in Storytime Books: A Text Mining Approach. Evidence Based Library and Information Practice, 16(4), 41–62.** https://doi.org/10.18438/eblip29963')
+             st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Topic Modeling. Text Mining for Information Professionals, 105–137.** https://doi.org/10.1007/978-3-030-85085-2_4')
+             st.markdown('**Lamba, M., & Madhusudhan, M. (2019, June 7). Mapping of topics in DESIDOC Journal of Library and Information Technology, India: a study. Scientometrics, 120(2), 477–505.** https://doi.org/10.1007/s11192-019-03137-5')
      
     #===BERTopic===
     elif method is 'BERTopic':
-        num_btopic = st.slider('Choose number of topics', min_value=4, max_value=50, step=1)
+        num_btopic = st.slider('Choose number of topics', min_value=4, max_value=20, step=1)
         topic_abs = paper.Abstract_stop.values.tolist()
         topic_time = paper.Year.values.tolist()
         cluster_model = KMeans(n_clusters=num_btopic)
@@ -121,35 +119,36 @@ if uploaded_file is not None:
         
         tab1, tab2 = st.tabs(["📈 Generate visualization", "📃 Reference"])
         with tab1:
-             #===visualization===
-             viz = st.selectbox(
-              'Choose visualization',
-              ('Visualize Topics', 'Visualize Documents', 'Visualize Document Hierarchy', 'Visualize Topic Similarity', 'Visualize Terms', 'Visualize Topics over Time'))
+             with st.spinner('Calculating, please wait ....'):
+                  #===visualization===
+                  viz = st.selectbox(
+                   'Choose visualization',
+                   ('Visualize Topics', 'Visualize Documents', 'Visualize Document Hierarchy', 'Visualize Topic Similarity', 'Visualize Terms', 'Visualize Topics over Time'))
 
-             if viz == 'Visualize Topics':
-                    fig1 = topic_model.visualize_topics()
-                    st.write(fig1)
+                  if viz == 'Visualize Topics':
+                         fig1 = topic_model.visualize_topics()
+                         st.write(fig1)
 
-             elif viz == 'Visualize Documents':
-                    fig2 = topic_model.visualize_documents(topic_abs)
-                    st.write(fig2)
+                  elif viz == 'Visualize Documents':
+                         fig2 = topic_model.visualize_documents(topic_abs)
+                         st.write(fig2)
 
-             elif viz == 'Visualize Document Hierarchy':
-                    fig3 = topic_model.visualize_hierarchy(top_n_topics=num_btopic)
-                    st.write(fig3)
+                  elif viz == 'Visualize Document Hierarchy':
+                         fig3 = topic_model.visualize_hierarchy(top_n_topics=num_btopic)
+                         st.write(fig3)
 
-             elif viz == 'Visualize Topic Similarity':
-                    fig4 = topic_model.visualize_heatmap(n_clusters=num_btopic-1, width=1000, height=1000)
-                    st.write(fig4)
+                  elif viz == 'Visualize Topic Similarity':
+                         fig4 = topic_model.visualize_heatmap(n_clusters=num_btopic-1, width=1000, height=1000)
+                         st.write(fig4)
 
-             elif viz == 'Visualize Terms':
-                    fig5 = topic_model.visualize_barchart(top_n_topics=num_btopic)
-                    st.write(fig5)
+                  elif viz == 'Visualize Terms':
+                         fig5 = topic_model.visualize_barchart(top_n_topics=num_btopic)
+                         st.write(fig5)
 
-             elif viz == 'Visualize Topics over Time':
-                    topics_over_time = topic_model.topics_over_time(topic_abs, topic_time)
-                    fig6 = topic_model.visualize_topics_over_time(topics_over_time)
-                    st.write(fig6)
+                  elif viz == 'Visualize Topics over Time':
+                         topics_over_time = topic_model.topics_over_time(topic_abs, topic_time)
+                         fig6 = topic_model.visualize_topics_over_time(topics_over_time)
+                         st.write(fig6)
                     
         with tab2:
           st.markdown('**Grootendorst, M. (2022). BERTopic: Neural topic modeling with a class-based TF-IDF procedure. arXiv preprint arXiv:2203.05794.**')
