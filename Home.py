@@ -79,7 +79,7 @@ with tab3:
    st.text('Librarian. Polytechnic Institute of Nuclear Technology, National Research and Innovation Agency.')
    st.text('')
    st.subheader('Crissandra George')
-   st.text('Aspiring Academic Librarian and Archivist. University of Kentucky.')
+   st.text('Digital Collections Manager Librarian. Case Western Reserve University.')
    st.text('')
    st.divider()
    st.header('Advisor')
