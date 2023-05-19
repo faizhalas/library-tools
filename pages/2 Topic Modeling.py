@@ -37,6 +37,15 @@ st.set_page_config(
 st.header("Topic Modeling")
 st.subheader('Put your CSV file here ...')
 
+#===optimize Biterm===
+@st.cache_resource
+def biterm_topic():
+     topics_coords = tmp.prepare_coords(model)
+     return topics_coords
+
+def reset_data():
+     st.cache_resource.clear()
+
 #===upload file===
 uploaded_file = st.file_uploader("Choose a file")
 if uploaded_file is not None:
@@ -64,7 +73,7 @@ if uploaded_file is not None:
 
     method = st.selectbox(
             'Choose method',
-            ('pyLDA', 'BERTopic'))
+            ('pyLDA', 'Biterm','BERTopic'))
         
     #===topic===
     if method is 'pyLDA':
@@ -108,7 +117,45 @@ if uploaded_file is not None:
              st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Topic Modeling. Text Mining for Information Professionals, 105–137.** https://doi.org/10.1007/978-3-030-85085-2_4')
              st.markdown('**Lamba, M., & Madhusudhan, M. (2019, June 7). Mapping of topics in DESIDOC Journal of Library and Information Technology, India: a study. Scientometrics, 120(2), 477–505.** https://doi.org/10.1007/s11192-019-03137-5')
      
-    #===BERTopic===
+     #===BERTopic===
+    elif method is 'Biterm':
+        num_bitopic = st.slider('Choose number of topics', min_value=2, max_value=20, step=1, on_change=reset_data)
+        topic_abs = paper.Abstract_stop.values.tolist()       
+        X, vocabulary, vocab_dict = btm.get_words_freqs(topic_abs)
+        tf = np.array(X.sum(axis=0)).ravel()
+        docs_vec = btm.get_vectorized_docs(topic_abs, vocabulary)
+        docs_lens = list(map(len, docs_vec))
+        biterms = btm.get_biterms(docs_vec)
+        model = btm.BTM(
+          X, vocabulary, seed=12321, T=num_bitopic, M=20, alpha=50/8, beta=0.01)
+        model.fit(biterms, iterations=20)
+        p_zd = model.transform(docs_vec)
+        coherence = model.coherence_
+        phi = tmp.get_phi(model)
+        try:
+          topik = biterm_topic()
+          totaltop = topik.label.values.tolist()
+          with st.spinner('Visualizing, please wait ....'):          
+             tab1, tab2 = st.tabs(["📈 Generate visualization", "📃 Reference"])
+             with tab1:
+                  col1, col2 = st.columns(2)
+                  with col1:
+                    num_bitopic_vis = st.selectbox(
+                         'Choose topic',
+                         (totaltop))
+                    btmvis_coords = tmp.plot_scatter_topics(topik, size_col='size', label_col='label', topic=num_bitopic_vis)
+                    st.altair_chart(btmvis_coords, use_container_width=True)
+                  with col2:
+                    terms_probs = tmp.calc_terms_probs_ratio(phi, topic=num_bitopic_vis, lambda_=1)
+                    btmvis_probs = tmp.plot_terms(terms_probs, font_size=12)
+                    st.altair_chart(btmvis_probs, use_container_width=True)
+             with tab2: 
+                    st.markdown('**Yan, X., Guo, J., Lan, Y., & Cheng, X. (2013, May 13). A biterm topic model for short texts. Proceedings of the 22nd International Conference on World Wide Web.** https://doi.org/10.1145/2488388.2488514')
+          
+        except ValueError:
+          st.error('Please raise the number of topics')
+    
+     #===BERTopic===
     elif method is 'BERTopic':
         num_btopic = st.slider('Choose number of topics', min_value=4, max_value=20, step=1)
         topic_abs = paper.Abstract_stop.values.tolist()
@@ -150,4 +197,4 @@ if uploaded_file is not None:
                  st.write(fig6)
                     
         with tab2:
-          st.markdown('**Grootendorst, M. (2022). BERTopic: Neural topic modeling with a class-based TF-IDF procedure. arXiv preprint arXiv:2203.05794.**')
+          st.markdown('**Grootendorst, M. (2022). BERTopic: Neural topic modeling with a class-based TF-IDF procedure. arXiv preprint arXiv:2203.05794.** https://doi.org/10.48550/arXiv.2203.05794')
