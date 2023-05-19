@@ -8,7 +8,7 @@ st.set_page_config(
      page_icon="🥥",
      layout="wide"
 )
-st.title('🥥 Coconut Library Tools')
+st.title('🥥 Coconut Library Tool')
 st.sidebar.success('Select page above')
 
 #===page===
@@ -43,10 +43,10 @@ with tab2:
             
    elif option == 'Topic Modeling':
         st.write('💡 The idea came from this:')
-        st.write('Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and interpreting topics. In Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Proceedings of the Workshop on Interactive Language Learning, Visualization, and Interfaces. Association for Computational Linguistics. https://doi.org/10.3115/v1/w14-3110')
+        st.write('Lamba, M., & Madhusudhan, M. (2021, July 31). Topic Modeling. Text Mining for Information Professionals, 105–137. https://doi.org/10.1007/978-3-030-85085-2_4')
         if st.button('🌟 Show me'):
             st.text("1. Put your Scopus CSV file. We use abstract column for this process.")
-            st.text("2. Choose your preferred method.")
+            st.text("2. Choose your preferred method. LDA is the most widely used, whereas Biterm is appropriate for short text and BERTopic works well for large text data.")
             st.text("3. Finally, you can visualize your data.")
             st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words. For other languages you can use stemming.", icon="💬")
             st.error("If you want to see the topic on another data (chats, questionnaire, or other text), change the column name of your table to 'Abstract'.", icon="🚨")
