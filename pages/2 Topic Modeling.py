@@ -117,8 +117,9 @@ if uploaded_file is not None:
              st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Topic Modeling. Text Mining for Information Professionals, 105–137.** https://doi.org/10.1007/978-3-030-85085-2_4')
              st.markdown('**Lamba, M., & Madhusudhan, M. (2019, June 7). Mapping of topics in DESIDOC Journal of Library and Information Technology, India: a study. Scientometrics, 120(2), 477–505.** https://doi.org/10.1007/s11192-019-03137-5')
      
-     #===BERTopic===
+     #===Biterm===
     elif method is 'Biterm':
+        topic_abs = paper.Abstract_stop.values.tolist()
         num_bitopic = st.slider('Choose number of topics', min_value=2, max_value=20, step=1, on_change=reset_data)
         topic_abs = paper.Abstract_stop.values.tolist()       
         X, vocabulary, vocab_dict = btm.get_words_freqs(topic_abs)
