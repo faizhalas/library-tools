@@ -173,7 +173,7 @@ if uploaded_file is not None:
         topic_model = BERTopic(hdbscan_model=cluster_model).fit(topic_abs)
         topics, probs = topic_model.fit_transform(topic_abs)
         
-        tab1, tab2 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
+        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
         with tab1:
           #===visualization===
           viz = st.selectbox(
