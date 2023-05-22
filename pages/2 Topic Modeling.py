@@ -41,7 +41,7 @@ st.header("Topic Modeling")
 st.subheader('Put your CSV file here ...')
 
 #===optimize Biterm===
-@st.cache_resource
+@st.cache_resource(ttl=6*3600)
 def biterm_topic():
      topics_coords = tmp.prepare_coords(model)
      return topics_coords
