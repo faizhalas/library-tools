@@ -12,7 +12,6 @@ pyldavis
 regex
 seaborn
 setuptools
-spacy
 streamlit
 streamlit-agraph
 umap-learn
