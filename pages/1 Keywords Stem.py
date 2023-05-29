@@ -31,22 +31,58 @@ def reset_data():
 @st.cache_data(ttl=3600)
 def upload(file):
     uploaded_file = file
-    return uploaded_file
+    keywords = pd.read_csv(uploaded_file)
+    return keywords
 
-uploaded_file = st.file_uploader("Choose your a file", type=['csv'], on_change=reset_data)
+@st.cache_data(ttl=3600)
+def conv_txt(file):
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DT': 'Document Type',
+            'DE': 'Author Keywords',
+            'ID': 'Keywords Plus',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',}
+    keywords = pd.read_csv(file, sep='\t', lineterminator='\r')
+    keywords.rename(columns=col_dict, inplace=True)
+    return keywords
 
-if uploaded_file is not None: 
-     uploaded_file = upload(uploaded_file) 
+def rev_conv_txt():
+    col_dict_rev = {'Title': 'TI',
+            'Source title': 'SO',
+            'Document Type': 'DT',
+            'Author Keywords': 'DE',
+            'Keywords Plus': 'ID',
+            'Abstract': 'AB',
+            'Cited by': 'TC',
+            'Year': 'PY',}
+    keywords.rename(columns=col_dict_rev, inplace=True)
+    return keywords
 
-     @st.cache_data(ttl=3600)
-     def get_data():
-        keywords = pd.read_csv(uploaded_file)
-        list_of_column_key = list(keywords.columns)
-        list_of_column_key = [k for k in list_of_column_key if 'Keyword' in k]
-        return keywords, list_of_column_key
-     
-     keywords, list_of_column_key = get_data()
-     
+@st.cache_data(ttl=3600)
+def get_ext(file):
+    extype = file.name
+    return extype
+
+@st.cache_data(ttl=3600)
+def get_data():
+    list_of_column_key = list(keywords.columns)
+    list_of_column_key = [k for k in list_of_column_key if 'Keyword' in k]
+    return list_of_column_key
+
+uploaded_file = st.file_uploader("Choose your a file", type=['csv','txt'], on_change=reset_data)
+
+if uploaded_file is not None:
+     extype = get_ext(uploaded_file)
+     if extype.endswith('.csv'):
+         keywords = upload(uploaded_file) 
+                  
+     elif extype.endswith('.txt'):
+         keywords = conv_txt(uploaded_file)
+         
+     list_of_column_key = get_data()
+
      col1, col2 = st.columns(2)
      with col1:
         method = st.selectbox(
@@ -123,14 +159,28 @@ if uploaded_file is not None:
          @st.cache_data(ttl=3600)
          def convert_df(df):
             return df.to_csv(index=False).encode('utf-8')
-
-         csv = convert_df(keywords)
-         st.download_button(
-             "Press to download result 👈",
-             csv,
-             "scopus.csv",
-             "text/csv")
-          
+         
+         @st.cache_data(ttl=3600)
+         def convert_txt(df):
+             return df.to_csv(index=False, sep='\t', lineterminator='\r').encode('utf-8')
+         
+         if extype.endswith('.csv'):
+             csv = convert_df(keywords)
+             st.download_button(
+                "Press to download result 👈",
+                csv,
+                "scopus.csv",
+                "text/csv")
+  
+         elif extype.endswith('.txt'):
+             keywords = rev_conv_txt()
+             txt = convert_txt(keywords)
+             st.download_button(
+                "Press to download result 👈",
+                txt,
+                "savedrecs.txt",
+                "text/csv")    
+         
      with tab2:
          @st.cache_data(ttl=3600)
          def table_keyword():
@@ -142,8 +192,9 @@ if uploaded_file is not None:
          @st.cache_data(ttl=3600)
          def convert_dfs(df):
              return df.to_csv(index=False).encode('utf-8')
-
+                
          csv = convert_dfs(key)
+
          st.download_button(
              "Press to download keywords 👈",
              csv,
