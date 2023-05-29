@@ -49,8 +49,7 @@ def reset_all():
      
 #===clean csv===
 @st.cache_data(ttl=3600)
-def clean_csv(scopus_file):
-    papers = pd.read_csv(scopus_file)
+def clean_csv():
     try:
         paper = papers.dropna(subset=['Abstract'])
     except KeyError:
@@ -60,36 +59,62 @@ def clean_csv(scopus_file):
     paper = paper[~paper.Abstract.str.contains("STRAIT")]
             
         #===mapping===
-    paper['Abstract_pre'] = paper['Abstract'].map(lambda x: re.sub('[,:;\.!?•=]', '', x))
+    paper['Abstract_pre'] = paper['Abstract'].map(lambda x: re.sub('[,:;\.!-?•=]', '', x))
     paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: x.lower())
     paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: re.sub('©.*', '', x))
-            
+          
+         #===stopword removal===
+    stop = stopwords.words('english')
+    paper['Abstract_stop'] = paper['Abstract_pre'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
+     
         #===lemmatize===
     lemmatizer = WordNetLemmatizer()
     def lemmatize_words(text):
         words = text.split()
         words = [lemmatizer.lemmatize(word) for word in words]
         return ' '.join(words)
-    paper['Abstract_lem'] = paper['Abstract_pre'].apply(lemmatize_words)
-        
-        #===stopword removal===
-    stop = stopwords.words('english')
-    paper['Abstract_stop'] = paper['Abstract_lem'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
-    global topic_abs
-    topic_abs = paper.Abstract_stop.values.tolist()
+    paper['Abstract_lem'] = paper['Abstract_stop'].apply(lemmatize_words)
+     
+    topic_abs = paper.Abstract_lem.values.tolist()
     return topic_abs, paper
 
 #===upload file===
 @st.cache_data(ttl=3600)
 def upload(file):
     uploaded_file = file
-    return uploaded_file
+    papers = pd.read_csv(uploaded_file)
+    return papers
 
-uploaded_file = st.file_uploader("Choose a file", type=['csv'], on_change=reset_all)
+@st.cache_data(ttl=3600)
+def conv_txt(file):
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DT': 'Document Type',
+            'DE': 'Author Keywords',
+            'ID': 'Keywords Plus',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',}
+    papers = pd.read_csv(file, sep='\t', lineterminator='\r')
+    papers.rename(columns=col_dict, inplace=True)
+    return papers
+
+@st.cache_data(ttl=3600)
+def get_ext(file):
+    extype = file.name
+    return extype
+
+#===Read data===
+uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change=reset_all)
 
 if uploaded_file is not None:
-    uploaded_file = upload(uploaded_file)
-    topic_abs, paper=clean_csv(uploaded_file)
+    extype = get_ext(uploaded_file)
+    if extype.endswith('.csv'):
+         papers = upload(uploaded_file) 
+    elif extype.endswith('.txt'):
+         papers = conv_txt(uploaded_file)
+          
+    topic_abs, paper=clean_csv()
     method = st.selectbox(
             'Choose method',
             ('Choose...', 'pyLDA', 'Biterm','BERTopic'), on_change=reset_resource)
