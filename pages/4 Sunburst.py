@@ -24,17 +24,40 @@ def reset_resource():
 @st.cache_data(ttl=3600)
 def upload(file):
     uploaded_file = file
-    return uploaded_file
+    papers = pd.read_csv(uploaded_file)
+    return papers
 
-#===body===
-uploaded_file = st.file_uploader("Choose a file", type=['csv'], on_change=reset_all)
+@st.cache_data(ttl=3600)
+def conv_txt(file):
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DT': 'Document Type',
+            'DE': 'Author Keywords',
+            'ID': 'Keywords Plus',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',}
+    papers = pd.read_csv(file, sep='\t', lineterminator='\r')
+    papers.rename(columns=col_dict, inplace=True)
+    return papers
 
-if uploaded_file is not None: 
-    uploaded_file = upload(uploaded_file)
+@st.cache_data(ttl=3600)
+def get_ext(file):
+    extype = file.name
+    return extype
+
+#===Read data===
+uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change=reset_all)
+
+if uploaded_file is not None:
+    extype = get_ext(uploaded_file)
+    if extype.endswith('.csv'):
+         papers = upload(uploaded_file) 
+    elif extype.endswith('.txt'):
+         papers = conv_txt(uploaded_file)
     
     @st.cache_data(ttl=3600)
     def get_minmax():
-        papers = pd.read_csv(uploaded_file)
         MIN = int(papers['Year'].min())
         MAX = int(papers['Year'].max())
         GAP = MAX - MIN
