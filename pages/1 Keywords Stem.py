@@ -22,7 +22,7 @@ st.set_page_config(
      layout="wide"
 )
 st.header("Keywords Stem")
-st.subheader('Put your CSV file and choose method')
+st.subheader('Put your file here...')
 
 def reset_data():
      st.cache_data.clear()
