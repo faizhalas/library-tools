@@ -12,7 +12,7 @@ st.set_page_config(
      layout="wide"
 )
 st.header("Data visualization")
-st.subheader('Put your CSV file and choose a visualization')
+st.subheader('Put your file here...')
 
 def reset_all():
      st.cache_data.clear()
