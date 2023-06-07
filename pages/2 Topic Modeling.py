@@ -38,7 +38,7 @@ st.set_page_config(
      layout="wide"
 )
 st.header("Topic Modeling")
-st.subheader('Put your CSV file here ...')
+st.subheader('Put your file here ...')
 
 def reset_resource():
      st.cache_resource.clear()
