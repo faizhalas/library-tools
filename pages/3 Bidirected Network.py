@@ -25,7 +25,7 @@ st.set_page_config(
      layout="wide"
 )
 st.header("Biderected Keywords Network")
-st.subheader('Put your CSV file here ...')
+st.subheader('Put your file here...')
 
 def reset_all():
      st.cache_data.clear()
