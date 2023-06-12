@@ -46,10 +46,7 @@ def conv_txt(file):
             'SO': 'Source title',
             'DT': 'Document Type',
             'DE': 'Author Keywords',
-            'ID': 'Keywords Plus',
-            'AB': 'Abstract',
-            'TC': 'Cited by',
-            'PY': 'Year',}
+            'ID': 'Keywords Plus'}
     papers = pd.read_csv(file, sep='\t', lineterminator='\r')
     papers.rename(columns=col_dict, inplace=True)
     return papers
