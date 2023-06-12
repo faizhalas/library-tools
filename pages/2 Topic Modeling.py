@@ -29,7 +29,8 @@ import bitermplus as btm
 import tmplot as tmp
 import tomotopy
 import sys
-
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 #===config===
 st.set_page_config(
