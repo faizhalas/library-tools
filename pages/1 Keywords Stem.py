@@ -30,8 +30,8 @@ def reset_data():
 #===upload===
 @st.cache_data(ttl=3600)
 def upload(file):
-    uploaded_file = file
-    keywords = pd.read_csv(uploaded_file)
+    #uploaded_file = file
+    keywords = pd.read_csv(file)
     return keywords
 
 @st.cache_data(ttl=3600)
