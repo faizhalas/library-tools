@@ -44,6 +44,7 @@ def conv_txt(file):
     keywords.rename(columns=col_dict, inplace=True)
     return keywords
 
+@st.cache_data(ttl=3600)
 def rev_conv_txt():
     col_dict_rev = {'Title': 'TI',
             'Source title': 'SO',
