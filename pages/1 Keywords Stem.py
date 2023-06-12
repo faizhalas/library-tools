@@ -38,12 +38,8 @@ def upload(file):
 def conv_txt(file):
     col_dict = {'TI': 'Title',
             'SO': 'Source title',
-            'DT': 'Document Type',
             'DE': 'Author Keywords',
-            'ID': 'Keywords Plus',
-            'AB': 'Abstract',
-            'TC': 'Cited by',
-            'PY': 'Year',}
+            'ID': 'Keywords Plus'}
     keywords = pd.read_csv(file, sep='\t', lineterminator='\r')
     keywords.rename(columns=col_dict, inplace=True)
     return keywords
@@ -51,12 +47,8 @@ def conv_txt(file):
 def rev_conv_txt():
     col_dict_rev = {'Title': 'TI',
             'Source title': 'SO',
-            'Document Type': 'DT',
             'Author Keywords': 'DE',
-            'Keywords Plus': 'ID',
-            'Abstract': 'AB',
-            'Cited by': 'TC',
-            'Year': 'PY',}
+            'Keywords Plus': 'ID'}
     keywords.rename(columns=col_dict_rev, inplace=True)
     return keywords
 
