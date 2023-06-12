@@ -232,7 +232,7 @@ if uploaded_file is not None:
         def bertopic_vis():
           topic_time = paper.Year.values.tolist()
           cluster_model = KMeans(n_clusters=num_btopic)
-          topic_model = BERTopic(hdbscan_model=cluster_model).fit(topic_abs)
+          topic_model = BERTopic(hdbscan_model=cluster_model, language="multilingual").fit(topic_abs)
           topics, probs = topic_model.fit_transform(topic_abs)
           return topic_model, topic_time, topics, probs
         
@@ -259,7 +259,7 @@ if uploaded_file is not None:
 
         @st.cache_resource(ttl=3600)
         def Vis_Barchart():
-          fig5 = topic_model.visualize_barchart(top_n_topics=num_btopic)
+          fig5 = topic_model.visualize_barchart(top_n_topics=num_btopic, n_words=10)
           return fig5
     
         @st.cache_resource(ttl=3600)
