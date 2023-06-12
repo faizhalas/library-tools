@@ -29,8 +29,6 @@ import bitermplus as btm
 import tmplot as tmp
 import tomotopy
 import sys
-import os
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 #===config===
 st.set_page_config(
@@ -115,7 +113,7 @@ if uploaded_file is not None:
     topic_abs, paper=clean_csv()
     method = st.selectbox(
             'Choose method',
-            ('Choose...', 'pyLDA', 'Biterm','BERTopic'), on_change=reset_resource)
+            ('Choose...', 'pyLDA', 'Biterm','BERTopic'), on_change=reset_all)
         
     #===topic===
     if method == 'Choose...':
