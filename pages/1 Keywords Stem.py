@@ -29,9 +29,9 @@ def reset_data():
 
 #===upload===
 @st.cache_data(ttl=3600)
-def upload(file):
+def upload():
     #uploaded_file = file
-    keywords = pd.read_csv(file)
+    keywords = pd.read_csv(uploaded_file)
     return keywords
 
 @st.cache_data(ttl=3600)
@@ -69,7 +69,7 @@ uploaded_file = st.file_uploader("Choose your a file", type=['csv','txt'], on_ch
 if uploaded_file is not None:
      extype = get_ext(uploaded_file)
      if extype.endswith('.csv'):
-         keywords = upload(uploaded_file) 
+         keywords = upload() 
                   
      elif extype.endswith('.txt'):
          keywords = conv_txt(uploaded_file)
