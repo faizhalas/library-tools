@@ -1,6 +1,8 @@
 # Coconut Library Tools
 
-[![Open in Streamlit][share_badge]][share_link] 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)][share_link]
+[![Mirror](https://img.shields.io/website?up_color=green&up_message=mirror&url=https%3A%2F%2Fsites.google.com%2Fview%2Fcoconut-lib-tool)](https://sites.google.com/view/coconut-lib-tool)
+[![License](https://img.shields.io/github/license/faizhalas/library-tools?color=blue)](https://github.com/faizhalas/library-tools/blob/main/LICENSE)
 
 
 ### What is Coconut?
@@ -16,8 +18,8 @@ We thank the cool people who have created so many facilities that we can place t
 ### Preview
 [![Preview][share_img]][share_link]
 
-[share_badge]: https://static.streamlit.io/badges/streamlit_badge_black_white.svg
 [share_link]: https://coconut.streamlit.app
 [share_img]: https://raw.githubusercontent.com/faizhalas/library-tools/main/coconut.jpg
+
 
 
