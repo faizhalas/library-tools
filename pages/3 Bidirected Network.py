@@ -27,34 +27,31 @@ st.set_page_config(
 st.header("Biderected Keywords Network")
 st.subheader('Put your file here...')
 
+#===clear cache===
 def reset_all():
      st.cache_data.clear()
-     st.cache_resource.clear()
 
-def reset_resource():
-     st.cache_resource.clear()
+#===check type===
+@st.cache_data(ttl=3600)
+def get_ext(extype):
+    extype = uploaded_file.name
+    return extype
 
 @st.cache_data(ttl=3600)
-def upload(file):
-    uploaded_file = file
+def upload(extype):
     papers = pd.read_csv(uploaded_file)
     return papers
 
 @st.cache_data(ttl=3600)
-def conv_txt(file):
+def conv_txt(extype):
     col_dict = {'TI': 'Title',
             'SO': 'Source title',
             'DT': 'Document Type',
             'DE': 'Author Keywords',
             'ID': 'Keywords Plus'}
-    papers = pd.read_csv(file, sep='\t', lineterminator='\r')
+    papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
     papers.rename(columns=col_dict, inplace=True)
     return papers
-
-@st.cache_data(ttl=3600)
-def get_ext(file):
-    extype = file.name
-    return extype
 
 #===Read data===
 uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change=reset_all)
@@ -62,17 +59,17 @@ uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change
 if uploaded_file is not None:
     extype = get_ext(uploaded_file)
     if extype.endswith('.csv'):
-         papers = upload(uploaded_file) 
+         papers = upload(extype) 
     elif extype.endswith('.txt'):
-         papers = conv_txt(uploaded_file)
+         papers = conv_txt(extype)
     
     @st.cache_data(ttl=3600)
-    def get_data_arul():
+    def get_data_arul(extype):
         list_of_column_key = list(papers.columns)
         list_of_column_key = [k for k in list_of_column_key if 'Keyword' in k]
         return papers, list_of_column_key
      
-    papers, list_of_column_key = get_data_arul()
+    papers, list_of_column_key = get_data_arul(extype)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -87,7 +84,7 @@ if uploaded_file is not None:
 
     #===body=== 
     @st.cache_data(ttl=3600)
-    def clean_arul():
+    def clean_arul(extype):
         global keyword, papers
         try:
             arul = papers.dropna(subset=[keyword])
@@ -100,11 +97,11 @@ if uploaded_file is not None:
         arul[keyword] = arul[keyword].dropna()
         return arul
 
-    arul = clean_arul()   
+    arul = clean_arul(extype)   
 
     #===stem/lem===
     @st.cache_data(ttl=3600)
-    def lemma_arul():
+    def lemma_arul(extype):
         lemmatizer = WordNetLemmatizer()
         def lemmatize_words(text):
              words = text.split()
@@ -114,7 +111,7 @@ if uploaded_file is not None:
         return arul
     
     @st.cache_data(ttl=3600)
-    def stem_arul():
+    def stem_arul(extype):
         stemmer = SnowballStemmer("english")
         def stem_words(text):
             words = text.split()
@@ -124,77 +121,76 @@ if uploaded_file is not None:
         return arul
 
     if method is 'Lemmatization':
-        arul = lemma_arul()
+        arul = lemma_arul(extype)
     else:
-        arul = stem_arul()
+        arul = stem_arul(extype)
     
     @st.cache_data(ttl=3600)
-    def arm():
+    def arm(extype):
         arule = arul[keyword].str.split(' ; ')
         arule_list = arule.values.tolist()  
         te_ary = te.fit(arule_list).transform(arule_list)
         df = pd.DataFrame(te_ary, columns=te.columns_)
         return df
-    df = arm()
+    df = arm(extype)
 
     col1, col2, col3 = st.columns(3)
     with col1:
         supp = st.slider(
             'Select value of Support',
-            0.001, 1.000, (0.010), on_change=reset_resource)
+            0.001, 1.000, (0.010), on_change=reset_all)
     with col2:
         conf = st.slider(
             'Select value of Confidence',
-            0.001, 1.000, (0.050), on_change=reset_resource)
+            0.001, 1.000, (0.050), on_change=reset_all)
     with col3:
         maxlen = st.slider(
             'Maximum length of the itemsets generated',
-            2, 8, (2), on_change=reset_resource)
+            2, 8, (2), on_change=reset_all)
 
     tab1, tab2 = st.tabs(["📈 Result & Generate visualization", "📓 Recommended Reading"])
     
     with tab1:
         #===Association rules===
-        @st.cache_resource(ttl=3600)
-        def freqitem():
-            global supp, maxlen
+        @st.cache_data(ttl=3600)
+        def freqitem(extype):
             freq_item = fpgrowth(df, min_support=supp, use_colnames=True, max_len=maxlen)
             return freq_item
         
-        @st.cache_resource(ttl=3600)
-        def arm_table():
-            global conf, freq_item
+        @st.cache_data(ttl=3600)
+        def arm_table(extype):
             res = association_rules(freq_item, metric='confidence', min_threshold=conf) 
             res = res[['antecedents', 'consequents', 'antecedent support', 'consequent support', 'support', 'confidence', 'lift', 'conviction']]
             res['antecedents'] = res['antecedents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
             res['consequents'] = res['consequents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
-            return res
+            restab = res
+            return res, restab
 
-        freq_item = freqitem()
+        freq_item = freqitem(extype)
         st.write('🚨 The more data you have, the longer you will have to wait.')
 
         if freq_item.empty:
             st.error('Please lower your value.', icon="🚨")
         else:
-            res = arm_table()
-            st.dataframe(res, use_container_width=True)
+            res, restab = arm_table(extype)
+            st.dataframe(restab, use_container_width=True)
                    
              #===visualize===
                 
-            if st.button('📈 Generate network visualization'):
+            if st.button('📈 Generate network visualization', on_click=reset_all):
                 with st.spinner('Visualizing, please wait ....'): 
-                     @st.cache_resource(ttl=3600)
-                     def map_node():
+                     @st.cache_data(ttl=3600)
+                     def map_node(extype):
                         res['to'] = res['antecedents'] + ' → ' + res['consequents'] + '\n Support = ' +  res['support'].astype(str) + '\n Confidence = ' +  res['confidence'].astype(str) + '\n Conviction = ' +  res['conviction'].astype(str)
                         res_ant = res[['antecedents','antecedent support']].rename(columns={'antecedents': 'node', 'antecedent support': 'size'}) #[['antecedents','antecedent support']]
                         res_con = res[['consequents','consequent support']].rename(columns={'consequents': 'node', 'consequent support': 'size'}) #[['consequents','consequent support']]
                         res_node = pd.concat([res_ant, res_con]).drop_duplicates(keep='first')
                         return res_node, res
                      
-                     res_node, res = map_node()
+                     res_node, res = map_node(extype)
 
-                     @st.cache_resource(ttl=3600)
-                     def arul_network():
+                     @st.cache_data(ttl=3600)
+                     def arul_network(extype):
                         nodes = []
                         edges = []
 
@@ -221,7 +217,7 @@ if uploaded_file is not None:
                                     )  
                         return nodes, edges
 
-                     nodes, edges = arul_network()
+                     nodes, edges = arul_network(extype)
                      config = Config(width=1200,
                                      height=800,
                                      directed=True, 
