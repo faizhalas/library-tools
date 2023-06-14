@@ -27,24 +27,30 @@ st.subheader('Put your file here...')
 def reset_data():
      st.cache_data.clear()
 
+#===check filetype===
+@st.cache_data(ttl=3600)
+def get_ext(extype):
+    extype = uploaded_file.name
+    return extype
+     
 #===upload===
 @st.cache_data(ttl=3600)
-def upload():
+def upload(extype):
     keywords = pd.read_csv(uploaded_file)
     return keywords
 
 @st.cache_data(ttl=3600)
-def conv_txt(file):
+def conv_txt(extype):
     col_dict = {'TI': 'Title',
             'SO': 'Source title',
             'DE': 'Author Keywords',
             'ID': 'Keywords Plus'}
-    keywords = pd.read_csv(file, sep='\t', lineterminator='\r')
+    keywords = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
     keywords.rename(columns=col_dict, inplace=True)
     return keywords
 
 @st.cache_data(ttl=3600)
-def rev_conv_txt():
+def rev_conv_txt(extype):
     col_dict_rev = {'Title': 'TI',
             'Source title': 'SO',
             'Author Keywords': 'DE',
@@ -53,12 +59,7 @@ def rev_conv_txt():
     return keywords
 
 @st.cache_data(ttl=3600)
-def get_ext(file):
-    extype = file.name
-    return extype
-
-@st.cache_data(ttl=3600)
-def get_data():
+def get_data(extype):
     list_of_column_key = list(keywords.columns)
     list_of_column_key = [k for k in list_of_column_key if 'Keyword' in k]
     return list_of_column_key
@@ -68,12 +69,12 @@ uploaded_file = st.file_uploader("Choose your a file", type=['csv','txt'], on_ch
 if uploaded_file is not None:
      extype = get_ext(uploaded_file)
      if extype.endswith('.csv'):
-         keywords = upload() 
+         keywords = upload(extype) 
                   
      elif extype.endswith('.txt'):
-         keywords = conv_txt(uploaded_file)
+         keywords = conv_txt(extype)
          
-     list_of_column_key = get_data()
+     list_of_column_key = get_data(extype)
 
      col1, col2 = st.columns(2)
      with col1:
@@ -86,7 +87,7 @@ if uploaded_file is not None:
            (list_of_column_key), on_change=reset_data)
 
      @st.cache_data(ttl=3600)
-     def clean_keyword():      
+     def clean_keyword(extype):      
         global keyword, keywords
         try:
             key = keywords[keyword]
@@ -110,7 +111,7 @@ if uploaded_file is not None:
      
      #===stem/lem===
      @st.cache_data(ttl=3600)
-     def Lemmatization():
+     def Lemmatization(extype):
         lemmatizer = WordNetLemmatizer()
         def lemmatize_words(text):
             words = text.split()
@@ -122,7 +123,7 @@ if uploaded_file is not None:
         return keywords, key
                 
      @st.cache_data(ttl=3600)
-     def Stemming():
+     def Stemming(extype):
         stemmer = SnowballStemmer("english")
         def stem_words(text):
             words = text.split()
@@ -133,12 +134,12 @@ if uploaded_file is not None:
         keywords[keyword] = keywords[keyword].map(lambda x: re.sub(' ; ', '; ', x))
         return keywords, key
      
-     keywords, key = clean_keyword() 
+     keywords, key = clean_keyword(extype) 
      
      if method is 'Lemmatization':
-         keywords, key = Lemmatization()
+         keywords, key = Lemmatization(extype)
      else:
-         keywords, key = Stemming()
+         keywords, key = Stemming(extype)
             
      st.write('Congratulations! 🤩 You choose',keyword ,'with',method,'method. Now, you can easily download the result by clicking the button below')
      st.divider()
@@ -149,15 +150,15 @@ if uploaded_file is not None:
      with tab1:
          st.dataframe(keywords, use_container_width=True)
          @st.cache_data(ttl=3600)
-         def convert_df(df):
-            return df.to_csv(index=False).encode('utf-8')
+         def convert_df(extype):
+            return keywords.to_csv(index=False).encode('utf-8')
          
          @st.cache_data(ttl=3600)
-         def convert_txt(df):
-             return df.to_csv(index=False, sep='\t', lineterminator='\r').encode('utf-8')
+         def convert_txt(extype):
+             return keywords.to_csv(index=False, sep='\t', lineterminator='\r').encode('utf-8')
          
          if extype.endswith('.csv'):
-             csv = convert_df(keywords)
+             csv = convert_df(extype)
              st.download_button(
                 "Press to download result 👈",
                 csv,
@@ -165,8 +166,8 @@ if uploaded_file is not None:
                 "text/csv")
   
          elif extype.endswith('.txt'):
-             keywords = rev_conv_txt()
-             txt = convert_txt(keywords)
+             keywords = rev_conv_txt(extype)
+             txt = convert_txt(extype)
              st.download_button(
                 "Press to download result 👈",
                 txt,
@@ -175,17 +176,17 @@ if uploaded_file is not None:
          
      with tab2:
          @st.cache_data(ttl=3600)
-         def table_keyword():
+         def table_keyword(extype):
              keytab = key.drop(['index'], axis=1).rename(columns={0: 'old'})
              return keytab
-         keytab = table_keyword()
+         keytab = table_keyword(extype)
          st.dataframe(keytab, use_container_width=True)
                   
          @st.cache_data(ttl=3600)
-         def convert_dfs(df):
-             return df.to_csv(index=False).encode('utf-8')
+         def convert_dfs(extype):
+             return key.to_csv(index=False).encode('utf-8')
                 
-         csv = convert_dfs(key)
+         csv = convert_dfs(extype)
 
          st.download_button(
              "Press to download keywords 👈",
