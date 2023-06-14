@@ -12,36 +12,36 @@ st.set_page_config(
      layout="wide"
 )
 st.header("Data visualization")
-st.subheader('Put your file here...')
+st.subheader('Put your CSV file and choose a visualization')
 
+#===clear cache===
 def reset_all():
      st.cache_data.clear()
-     st.cache_resource.clear()
 
-def reset_resource():
-     st.cache_resource.clear()
+#===check type===
+@st.cache_data(ttl=3600)
+def get_ext(extype):
+    extype = uploaded_file.name
+    return extype
 
 @st.cache_data(ttl=3600)
-def upload(file):
-    uploaded_file = file
+def upload(extype):
     papers = pd.read_csv(uploaded_file)
     return papers
 
 @st.cache_data(ttl=3600)
-def conv_txt(file):
+def conv_txt(extype):
     col_dict = {'TI': 'Title',
             'SO': 'Source title',
             'DT': 'Document Type',
+            'DE': 'Author Keywords',
+            'ID': 'Keywords Plus',
+            'AB': 'Abstract',
             'TC': 'Cited by',
-            'PY': 'Year'}
-    papers = pd.read_csv(file, sep='\t', lineterminator='\r')
+            'PY': 'Year',}
+    papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
     papers.rename(columns=col_dict, inplace=True)
     return papers
-
-@st.cache_data(ttl=3600)
-def get_ext(file):
-    extype = file.name
-    return extype
 
 #===Read data===
 uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change=reset_all)
@@ -49,12 +49,14 @@ uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change
 if uploaded_file is not None:
     extype = get_ext(uploaded_file)
     if extype.endswith('.csv'):
-         papers = upload(uploaded_file) 
+         papers = upload(extype) 
+   
     elif extype.endswith('.txt'):
-         papers = conv_txt(uploaded_file)
+         papers = conv_txt(extype)
     
     @st.cache_data(ttl=3600)
-    def get_minmax():
+    def get_minmax(extype):
+        extype = extype
         MIN = int(papers['Year'].min())
         MAX = int(papers['Year'].max())
         GAP = MAX - MIN
@@ -64,23 +66,23 @@ if uploaded_file is not None:
     
     with tab1:    
         #===sunburst===
-        papers, MIN, MAX, GAP = get_minmax()
+        papers, MIN, MAX, GAP = get_minmax(extype)
         
         if (GAP != 0):
-            YEAR = st.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_resource)
+            YEAR = st.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_all)
         else:
             st.write('You only have data in ', (MAX))
             YEAR = (MIN, MAX)
         
-        @st.cache_resource(ttl=3600)
-        def listyear():
+        @st.cache_data(ttl=3600)
+        def listyear(extype):
             global papers
             years = list(range(YEAR[0],YEAR[1]+1))
             papers = papers.loc[papers['Year'].isin(years)]
             return years, papers
         
-        @st.cache_resource(ttl=3600)
-        def vis_sunbrust():
+        @st.cache_data(ttl=3600)
+        def vis_sunbrust(extype):
             papers['Cited by'] = papers['Cited by'].fillna(0)
             vis = pd.DataFrame()
             vis[['doctype','source','citby','year']] = papers[['Document Type','Source title','Cited by','Year']]
@@ -94,11 +96,12 @@ if uploaded_file is not None:
             fig.update_layout(height=800, width=1200)
             return fig
         
-        years, papers = listyear()
+        years, papers = listyear(extype)
 
         if {'Document Type','Source title','Cited by','Year'}.issubset(papers.columns):
-            fig = vis_sunbrust()
+            fig = vis_sunbrust(extype)
             st.plotly_chart(fig, height=800, width=1200) #use_container_width=True)
+           
         else:
             st.error('We require these columns: Document Type, Source title, Cited by, Year', icon="🚨")
     
