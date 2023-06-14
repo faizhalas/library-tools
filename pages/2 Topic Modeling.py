@@ -29,6 +29,10 @@ import bitermplus as btm
 import tmplot as tmp
 import tomotopy
 import sys
+import spacy
+import en_core_web_sm
+import pipeline
+
 
 #===config===
 st.set_page_config(
@@ -39,16 +43,37 @@ st.set_page_config(
 st.header("Topic Modeling")
 st.subheader('Put your file here...')
 
-def reset_resource():
-     st.cache_resource.clear()
+#========unique id========
+@st.cache_resource(ttl=3600)
+def create_list():
+    l = [1, 2, 3]
+    return l
+
+l = create_list()
+first_list_value = l[0]
+l[0] = first_list_value + 1
+uID = str(l[0])
+
+@st.cache_data(ttl=3600)
+def get_ext(uploaded_file):
+    extype = uID+uploaded_file.name
+    return extype
+
+#===clear cache===
+
+def reset_biterm():
+     try:
+          biterm_map.clear()
+          biterm_bar.clear()
+     except NameError:
+          biterm_topic.clear()
 
 def reset_all():
      st.cache_data.clear()
-     st.cache_resource.clear()
-     
+        
 #===clean csv===
-@st.cache_data(ttl=3600)
-def clean_csv():
+@st.cache_data(ttl=3600, show_spinner=False)
+def clean_csv(extype):
     try:
         paper = papers.dropna(subset=['Abstract'])
     except KeyError:
@@ -80,37 +105,33 @@ def clean_csv():
 #===upload file===
 @st.cache_data(ttl=3600)
 def upload(file):
-    uploaded_file = file
     papers = pd.read_csv(uploaded_file)
     return papers
 
 @st.cache_data(ttl=3600)
-def conv_txt(file):
+def conv_txt(extype):
     col_dict = {'TI': 'Title',
             'SO': 'Source title',
             'DT': 'Document Type',
             'AB': 'Abstract',
             'PY': 'Year'}
-    papers = pd.read_csv(file, sep='\t', lineterminator='\r')
+    papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
     papers.rename(columns=col_dict, inplace=True)
     return papers
 
-@st.cache_data(ttl=3600)
-def get_ext(file):
-    extype = file.name
-    return extype
 
 #===Read data===
 uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change=reset_all)
 
 if uploaded_file is not None:
     extype = get_ext(uploaded_file)
+
     if extype.endswith('.csv'):
-         papers = upload(uploaded_file) 
+         papers = upload(extype) 
     elif extype.endswith('.txt'):
-         papers = conv_txt(uploaded_file)
+         papers = conv_txt(extype)
           
-    topic_abs, paper=clean_csv()
+    topic_abs, paper=clean_csv(extype)
     method = st.selectbox(
             'Choose method',
             ('Choose...', 'pyLDA', 'Biterm','BERTopic'), on_change=reset_all)
@@ -120,9 +141,9 @@ if uploaded_file is not None:
         st.write('')
 
     elif method == 'pyLDA':
-         num_topic = st.slider('Choose number of topics', min_value=2, max_value=15, step=1, on_change=reset_resource)
-         @st.cache_resource(ttl=3600)
-         def pylda():
+         num_topic = st.slider('Choose number of topics', min_value=2, max_value=15, step=1, on_change=reset_all)
+         @st.cache_data(ttl=3600, show_spinner=False)
+         def pylda(extype):
             topic_abs_LDA = [t.split(' ') for t in topic_abs]
             id2word = Dictionary(topic_abs_LDA)
             corpus = [id2word.doc2bow(text) for text in topic_abs_LDA]
@@ -150,7 +171,7 @@ if uploaded_file is not None:
          with tab1:
          #===visualization===
              with st.spinner('Calculating and Creating pyLDAvis Visualization ...'):
-              py_lda_vis_html, coherence_lda = pylda()
+              py_lda_vis_html, coherence_lda = pylda(extype)
               st.write('Coherence: ', (coherence_lda))
               components.html(py_lda_vis_html, width=1700, height=800)
               st.markdown('Copyright (c) 2015, Ben Mabey. https://github.com/bmabey/pyLDAvis')
@@ -166,10 +187,10 @@ if uploaded_file is not None:
      
      #===Biterm===
     elif method == 'Biterm':
-        num_bitopic = st.slider('Choose number of topics', min_value=2, max_value=20, step=1, on_change=reset_resource)     
+        num_bitopic = st.slider('Choose number of topics', min_value=2, max_value=20, step=1, on_change=reset_all)     
         #===optimize Biterm===
-        @st.cache_resource(ttl=3600)
-        def biterm_topic():
+        @st.cache_data(ttl=3600)
+        def biterm_topic(extype):
             X, vocabulary, vocab_dict = btm.get_words_freqs(topic_abs)
             tf = np.array(X.sum(axis=0)).ravel()
             docs_vec = btm.get_vectorized_docs(topic_abs, vocabulary)
@@ -186,31 +207,31 @@ if uploaded_file is not None:
             return topics_coords, phi, totaltop
 
         try:
-          topics_coords, phi, totaltop = biterm_topic()
+          topics_coords, phi, totaltop = biterm_topic(extype)
           #with st.spinner('Visualizing, please wait ....'):          
           tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
           with tab1:
             col1, col2 = st.columns(2)
                   
-            @st.cache_resource(ttl=3600)
-            def biterm_map(num):
-              btmvis_coords = tmp.plot_scatter_topics(topics_coords, size_col='size', label_col='label', topic=num)
+            @st.cache_data(ttl=3600)
+            def biterm_map(extype):
+              btmvis_coords = tmp.plot_scatter_topics(topics_coords, size_col='size', label_col='label', topic=numvis)
               return btmvis_coords
                   
-            @st.cache_resource(ttl=3600)
-            def biterm_bar(num):
-              terms_probs = tmp.calc_terms_probs_ratio(phi, topic=num, lambda_=1)
+            @st.cache_data(ttl=3600)
+            def biterm_bar(extype):
+              terms_probs = tmp.calc_terms_probs_ratio(phi, topic=numvis, lambda_=1)
               btmvis_probs = tmp.plot_terms(terms_probs, font_size=12)
               return btmvis_probs
                   
             with col1:
-              num_bitopic_vis = st.selectbox(
+              numvis = st.selectbox(
                 'Choose topic',
-                (totaltop))
-              btmvis_coords = biterm_map(num_bitopic_vis)
+                (totaltop), on_change=reset_biterm)
+              btmvis_coords = biterm_map(extype)
               st.altair_chart(btmvis_coords, use_container_width=True)
             with col2:
-              btmvis_probs = biterm_bar(num_bitopic_vis)
+              btmvis_probs = biterm_bar(extype)
               st.altair_chart(btmvis_probs, use_container_width=True)
 
           with tab2: 
@@ -226,77 +247,78 @@ if uploaded_file is not None:
     
      #===BERTopic===
     elif method == 'BERTopic':
-        num_btopic = st.slider('Choose number of topics', min_value=4, max_value=20, step=1, on_change=reset_resource)
-        @st.cache_resource(ttl=3600)
-        def bertopic_vis():
+        num_btopic = st.slider('Choose number of topics', min_value=4, max_value=20, step=1, on_change=reset_all)
+        @st.cache_data(ttl=3600)
+        def bertopic_vis(extype):
           topic_time = paper.Year.values.tolist()
           cluster_model = KMeans(n_clusters=num_btopic)
-          topic_model = BERTopic(hdbscan_model=cluster_model, language="multilingual").fit(topic_abs)
+          nlp = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
+          topic_model = BERTopic(embedding_model=nlp, hdbscan_model=cluster_model, language="multilingual").fit(topic_abs)
           topics, probs = topic_model.fit_transform(topic_abs)
           return topic_model, topic_time, topics, probs
         
-        @st.cache_resource(ttl=3600)
-        def Vis_Topics():
+        @st.cache_data(ttl=3600)
+        def Vis_Topics(extype):
           fig1 = topic_model.visualize_topics()
           return fig1
         
-        @st.cache_resource(ttl=3600)
-        def Vis_Documents():
+        @st.cache_data(ttl=3600)
+        def Vis_Documents(extype):
           fig2 = topic_model.visualize_documents(topic_abs)
           return fig2
 
-        @st.cache_resource(ttl=3600)
-        def Vis_Hierarchy():
+        @st.cache_data(ttl=3600)
+        def Vis_Hierarchy(extype):
           fig3 = topic_model.visualize_hierarchy(top_n_topics=num_btopic)
           return fig3
     
-        @st.cache_resource(ttl=3600)
-        def Vis_Heatmap():
+        @st.cache_data(ttl=3600)
+        def Vis_Heatmap(extype):
           global topic_model
           fig4 = topic_model.visualize_heatmap(n_clusters=num_btopic-1, width=1000, height=1000)
           return fig4
 
-        @st.cache_resource(ttl=3600)
-        def Vis_Barchart():
+        @st.cache_data(ttl=3600)
+        def Vis_Barchart(extype):
           fig5 = topic_model.visualize_barchart(top_n_topics=num_btopic, n_words=10)
           return fig5
     
-        @st.cache_resource(ttl=3600)
-        def Vis_ToT():
+        @st.cache_data(ttl=3600)
+        def Vis_ToT(extype):
           topics_over_time = topic_model.topics_over_time(topic_abs, topic_time)
           fig6 = topic_model.visualize_topics_over_time(topics_over_time)
           return fig6
         
         tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
         with tab1:
-          topic_model, topic_time, topics, probs = bertopic_vis()
+          topic_model, topic_time, topics, probs = bertopic_vis(extype)
           #===visualization===
           viz = st.selectbox(
             'Choose visualization',
             ('Visualize Topics', 'Visualize Documents', 'Visualize Document Hierarchy', 'Visualize Topic Similarity', 'Visualize Terms', 'Visualize Topics over Time'))
 
           if viz == 'Visualize Topics':
-                 fig1 = Vis_Topics()
+                 fig1 = Vis_Topics(extype)
                  st.write(fig1)
 
           elif viz == 'Visualize Documents':
-                 fig2 = Vis_Documents()
+                 fig2 = Vis_Documents(extype)
                  st.write(fig2)
 
           elif viz == 'Visualize Document Hierarchy':
-                 fig3 = Vis_Hierarchy()
+                 fig3 = Vis_Hierarchy(extype)
                  st.write(fig3)
 
           elif viz == 'Visualize Topic Similarity':
-                 fig4 = Vis_Heatmap()
+                 fig4 = Vis_Heatmap(extype)
                  st.write(fig4)
 
           elif viz == 'Visualize Terms':
-                 fig5 = Vis_Barchart()
+                 fig5 = Vis_Barchart(extype)
                  st.write(fig5)
 
           elif viz == 'Visualize Topics over Time':
-                 fig6 = Vis_ToT()
+                 fig6 = Vis_ToT(extype)
                  st.write(fig6)
 
         with tab2:
