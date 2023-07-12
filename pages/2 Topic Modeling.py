@@ -32,6 +32,8 @@ import sys
 import spacy
 import en_core_web_sm
 import pipeline
+import plotly.graph_objects as go
+from html2image import Html2Image
 
 
 #===config===
@@ -172,14 +174,35 @@ if uploaded_file is not None:
                  coherence_lda = coherence_model_lda.get_coherence()
                  vis = pyLDAvis.gensim_models.prepare(lda_model, corpus, id2word)
                  py_lda_vis_html = pyLDAvis.prepared_data_to_html(vis)
-                 return py_lda_vis_html, coherence_lda
+                 return py_lda_vis_html, coherence_lda, vis
                    
               with st.spinner('Performing computations. Please wait ...'):
                    try:
-                        py_lda_vis_html, coherence_lda = pylda(extype)
+                        py_lda_vis_html, coherence_lda, vis = pylda(extype)
                         st.write('Coherence: ', (coherence_lda))
-                        st.components.v1.html(py_lda_vis_html, width=1700, height=800)
+                        st.components.v1.html(py_lda_vis_html, width=1500, height=800)
                         st.markdown('Copyright (c) 2015, Ben Mabey. https://github.com/bmabey/pyLDAvis')
+                       
+                        @st.cache_data(ttl=3600, show_spinner=False)
+                        def img_lda(vis):
+                             pyLDAvis.save_html(vis, 'output.html')
+                             hti = Html2Image()
+                             hti.browser.flags = ['--default-background-color=ffffff', '--hide-scrollbars']
+                             css = "body {background: white;}"
+                             hti.screenshot(
+                                  other_file='output.html', css_str=css, size=(1500, 800),
+                                  save_as='ldavis_img.png'
+                             )
+                             
+                        img_lda(vis)   
+                        with open("ldavis_img.png", "rb") as file:
+                              btn = st.download_button(
+                                  label="Download image",
+                                  data=file,
+                                  file_name="ldavis_img.png",
+                                  mime="image/png"
+                                  )
+                       
                    except NameError:
                         st.warning('🖱️ Please click Submit')
 
@@ -296,6 +319,12 @@ if uploaded_file is not None:
           topics_over_time = topic_model.topics_over_time(topic_abs, topic_time)
           fig6 = topic_model.visualize_topics_over_time(topics_over_time)
           return fig6
+
+        @st.cache_data(ttl=3600, show_spinner=False)
+        def img_bert(fig):
+            my_saved_image = "fig.png"
+            fig.write_image(my_saved_image)
+            return my_saved_image
         
         tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
         with tab1:
@@ -311,31 +340,79 @@ if uploaded_file is not None:
                            with st.spinner('Performing computations. Please wait ...'):
                                 fig1 = Vis_Topics(extype)
                                 st.write(fig1)
+                                my_saved_image = img_bert(fig1)
+                                with open(my_saved_image, "rb") as file:
+                                  btn = st.download_button(
+                                       label="Download image",
+                                       data=file,
+                                       file_name="Vis_Topics.png",
+                                       mime="image/png"
+                                       )
           
                     elif viz == 'Visualize Documents':
                            with st.spinner('Performing computations. Please wait ...'):
                                 fig2 = Vis_Documents(extype)
                                 st.write(fig2)
+                                my_saved_image = img_bert(fig2)
+                                with open(my_saved_image, "rb") as file:
+                                  btn = st.download_button(
+                                       label="Download image",
+                                       data=file,
+                                       file_name="Vis_Documents.png",
+                                       mime="image/png"
+                                       )
           
                     elif viz == 'Visualize Document Hierarchy':
                            with st.spinner('Performing computations. Please wait ...'):
                                 fig3 = Vis_Hierarchy(extype)
                                 st.write(fig3)
+                                my_saved_image = img_bert(fig3)
+                                with open(my_saved_image, "rb") as file:
+                                  btn = st.download_button(
+                                       label="Download image",
+                                       data=file,
+                                       file_name="Vis_Hierarchy.png",
+                                       mime="image/png"
+                                       )
           
                     elif viz == 'Visualize Topic Similarity':
                            with st.spinner('Performing computations. Please wait ...'):
                                 fig4 = Vis_Heatmap(extype)
                                 st.write(fig4)
+                                my_saved_image = img_bert(fig4)
+                                with open(my_saved_image, "rb") as file:
+                                  btn = st.download_button(
+                                       label="Download image",
+                                       data=file,
+                                       file_name="Vis_Similarity.png",
+                                       mime="image/png"
+                                       )
           
                     elif viz == 'Visualize Terms':
                            with st.spinner('Performing computations. Please wait ...'):
                                 fig5 = Vis_Barchart(extype)
                                 st.write(fig5)
+                                my_saved_image = img_bert(fig5)
+                                with open(my_saved_image, "rb") as file:
+                                  btn = st.download_button(
+                                       label="Download image",
+                                       data=file,
+                                       file_name="Vis_Terms.png",
+                                       mime="image/png"
+                                       )
           
                     elif viz == 'Visualize Topics over Time':
                            with st.spinner('Performing computations. Please wait ...'):
                                 fig6 = Vis_ToT(extype)
                                 st.write(fig6)
+                                my_saved_image = img_bert(fig6)
+                                with open(my_saved_image, "rb") as file:
+                                  btn = st.download_button(
+                                       label="Download image",
+                                       data=file,
+                                       file_name="Vis_ToT.png",
+                                       mime="image/png"
+                                       )
                     
           except ValueError:
                st.error('🙇‍♂️ Please raise the number of topics and click submit')
