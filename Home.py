@@ -15,9 +15,10 @@ st.sidebar.success('Select page above')
 mt1, mt2, mt3 = st.tabs(["About", "How to", "Behind this app"])
 
 with mt1:
-   st.header("🌌 Hello universe!")
-   st.write('The coconut tree is known as one of the most useful trees. 🌴 The leaves function to produce oxygen through photosynthesis and are used for handicrafts, even for roof houses. The shells, the oil, the wood, the flowers, or even the husks can be something useful. From this philosophy, the Coconut Library Tool aims to be useful for librarians or anyone who needs cool features but is hindered by programming languages.')
-   st.write("We thank the cool people who have created so many facilities that we can place them in a place. We can't name them all, but we believe science will advance due to your efforts. 🧑🏻‍🤝‍🧑🏾")
+   st.header("🥥 Hello and welcome to the Coconut Library Tool!")
+   st.write("The coconut tree is known as one of the most useful trees. Each part of this important tree has an integral function from the leaves producing oxygen through photosynthesis to the shells, oil, wood, flowers, and husks being used in a variety of ways, such as building houses, cooking, and more.")
+   st.write("Our philosophy aspires to emulate this highly cohesive and functionally unified environment where each part serves a specific function to the greater whole. 🌴 Just like the coconut tree, the Coconut Library Tool is the all-in-one data mining and textual analysis tool for librarians or anyone interested in these applications. Our tool does not require any prior knowledge of coding or programming, making it approachable and great for users who want to test out these data analysis and visualization techniques.")  
+   st.write("We cannot thank everyone enough for who has assisted in the creation of this tool. Due to each individual’s efforts, science will advance, allowing for multiple analysis and visualization techniques to coexist within this one tool. 🧑🏻‍🤝‍🧑🏾")
    st.text('')
    st.text('')
    st.text('')
