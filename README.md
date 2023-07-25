@@ -1,4 +1,4 @@
-# Coconut Library Tools
+# Coconut Library Tool
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)][share_link]
 [![Mirror](https://img.shields.io/website?up_color=green&up_message=mirror&url=https%3A%2F%2Fsites.google.com%2Fview%2Fcoconut-lib-tool)](https://sites.google.com/view/coconut-lib-tool)
