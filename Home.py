@@ -65,7 +65,7 @@ with mt2:
             """)
             
    elif option == 'Topic Modeling':
-        tab1, tab2, tab3 = st.tabs(["Prologue", "Steps", "Requirements"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
         with tab1:
             st.write("Topic modeling has numerous advantages for librarians in different aspects of their work. A crucial benefit is an ability to quickly organize and categorize a huge volume of textual content found in websites, institutional archives, databases, emails, and reference desk questions. Librarians can use topic modeling approaches to automatically identify the primary themes or topics within these documents, making navigating and retrieving relevant information easier. Librarians can identify and understand the prevailing topics of discussion by analyzing text data with topic modeling tools, allowing them to assess user feedback, tailor their services to meet specific needs and make informed decisions about collection development and resource allocation. Making ontologies, automatic subject classification, recommendation services, bibliometrics, altmetrics, and better resource searching and retrieval are a few examples of topic modeling. To do topic modeling on other text like chats and surveys, change the column name to 'Abstract' in your file.")
             st.divider()
@@ -74,7 +74,7 @@ with mt2:
 
         with tab2:
             st.text("1. Put your file. We use abstract column for this process.")
-            st.text("2. Choose your preferred method. LDA is the most widely used, whereas Biterm is appropriate for short text, and BERTopic works well for large text data.")
+            st.text("2. Choose your preferred method. LDA is the most widely used, whereas Biterm is appropriate for short text, and BERTopic works well for large text data as well as supports more than 50+ languages.")
             st.text("3. Finally, you can visualize your data.")
             st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words. For other languages you can use stemming.", icon="💬")
             st.error("If you want to see the topic on another data (chats, questionnaire, or other text), change the column name of your table to 'Abstract'.", icon="🚨")
@@ -93,9 +93,24 @@ with mt2:
             | Other          | .csv                   | Change your column to 'Abstract' |
             +----------------+------------------------+----------------------------------+
             """)
+
+        with tab4:  
+             st.subheader(':blue[pyLDA]')
+             st.button('Download image')
+             st.text("Click Download Image button.")
+             
+             st.divider()
+             st.subheader(':blue[Biterm]')
+             st.text("Click the three dots at the top right then select the desired format.")
+             st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_biterm.jpg)")
+             
+             st.divider()
+             st.subheader(':blue[BERTopic]')
+             st.text("Click the camera icon on the top right menu")
+             st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
                              
    elif option == 'Bidirected Network':
-        tab1, tab2, tab3 = st.tabs(["Prologue", "Steps", "Requirements"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Graph"])
         with tab1:
             st.write("The use of network text analysis by librarians can be quite beneficial. Finding hidden correlations and connections in textual material is a significant advantage. Using network text analysis tools, librarians can improve knowledge discovery, obtain deeper insights, and support scholars meaningfully, ultimately enhancing the library's services and resources. This menu provides a two-way relationship instead of the general network of relationships to enhance the co-word analysis. Since it is based on ARM, you may obtain transactional data information using this menu. Please name the column in your file 'Keyword' instead.")
             st.divider()
@@ -129,9 +144,15 @@ with mt2:
             |                |                        | and separate the words with ';' |
             +----------------+------------------------+---------------------------------+
             """)    
+
+        with tab4:  
+             st.subheader(':blue[Bidirected Network]')
+             st.text("Zoom in, zoom out, or shift the nodes as desired, then right-click and select Save image as ...")
+             st.markdown("![Downloading graph](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bidirected.jpg)")     
+     
             
    elif option == 'Sunburst':
-        tab1, tab2, tab3 = st.tabs(["Prologue", "Steps", "Requirements"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
         with tab1:
             st.write("Sunburst's ability to present a thorough and intuitive picture of complex hierarchical data is an essential benefit. Librarians can easily browse and grasp the relationships between different levels of the hierarchy by employing sunburst visualizations. Sunburst visualizations can also be interactive, letting librarians and users drill down into certain categories or subcategories for further information. This interactive and visually appealing depiction improves the librarian's understanding of the collection and provides users with an engaging and user-friendly experience, resulting in improved information retrieval and decision-making.")
             
@@ -154,6 +175,12 @@ with mt2:
             |                | (.txt)                 |                |
             +----------------+------------------------+----------------+
             """)          
+
+        with tab4:  
+             st.subheader(':blue[Sunburst]')
+             st.text("Click the camera icon on the top right menu")
+             st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
+     
      
 with mt3:
    st.header('Behind this app')
