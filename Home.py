@@ -33,7 +33,7 @@ with mt2:
     ('Keyword Stem', 'Topic Modeling', 'Bidirected Network', 'Sunburst'))
    
    if option == 'Keyword Stem':
-        tab1, tab2, tab3 = st.tabs(["Prologue", "Steps", "Requirements"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Result"])
         with tab1:
             st.write("This approach is effective for locating basic words and aids in catching the true meaning of the word, which can lead to improved semantic analysis and comprehension of the text. Some people find it difficult to check keywords before performing bibliometrics (using software such as VOSviewer and Bibliometrix). This strategy makes it easy to combine and search for fundamental words from keywords, especially if you have a large number of keywords. To do stemming or lemmatization on other text, change the column name to 'Keyword' in your file.")
             st.divider()
@@ -63,6 +63,16 @@ with mt2:
             | Other          | .csv                   | Change your column to 'Keyword' |
             +----------------+------------------------+---------------------------------+
             """)
+
+        with tab4:  
+             st.subheader(':blue[Result]')
+             st.button('Press to download result 👈')
+             st.text("Go to Result and click Download button.")  
+
+             st.divider()
+             st.subheader(':blue[List of Keywords]')
+             st.button('Press to download keywords 👈')
+             st.text("Go to List of Keywords and click Download button.")  
             
    elif option == 'Topic Modeling':
         tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
@@ -115,8 +125,7 @@ with mt2:
             st.write("The use of network text analysis by librarians can be quite beneficial. Finding hidden correlations and connections in textual material is a significant advantage. Using network text analysis tools, librarians can improve knowledge discovery, obtain deeper insights, and support scholars meaningfully, ultimately enhancing the library's services and resources. This menu provides a two-way relationship instead of the general network of relationships to enhance the co-word analysis. Since it is based on ARM, you may obtain transactional data information using this menu. Please name the column in your file 'Keyword' instead.")
             st.divider()
             st.write('💡 The idea came from this:') 
-            st.write('Munan Li (2016): An exploration to visualise the emerging trends of technology foresight based on an improved technique of co-word analysis and relevant literature data of WOS, Technology Analysis & Strategic Management, DOI: 10.1080/09537325.2016.1220518')
-            st.write('Agrawal, R., Imieliński, T., & Swami, A. (1993). Mining association rules between sets of items in large databases. In ACM SIGMOD Record (Vol. 22, Issue 2, pp. 207–216). Association for Computing Machinery (ACM). https://doi.org/10.1145/170036.170072')
+            st.write('Santosa, F. (2023). Adding Perspective to the Bibliometric Mapping Using Bidirected Graph. Open Information Science, 7(1), 20220152. https://doi.org/10.1515/opis-2022-0152')
 
         with tab2:
             st.text("1. Put your file.")
