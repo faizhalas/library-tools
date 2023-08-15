@@ -33,6 +33,7 @@ import spacy
 import en_core_web_sm
 import pipeline
 from html2image import Html2Image
+from umap import UMAP
 
 
 #===config===
@@ -282,9 +283,11 @@ if uploaded_file is not None:
         @st.cache_data(ttl=3600, show_spinner=False)
         def bertopic_vis(extype):
           topic_time = paper.Year.values.tolist()
+          umap_model = UMAP(n_neighbors=15, n_components=5, 
+                  min_dist=0.0, metric='cosine', random_state=42)   
           cluster_model = KMeans(n_clusters=num_topic)
           nlp = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
-          topic_model = BERTopic(embedding_model=nlp, hdbscan_model=cluster_model, language="multilingual").fit(topic_abs)
+          topic_model = BERTopic(embedding_model=nlp, hdbscan_model=cluster_model, language="multilingual", umap_model=umap_model).fit(topic_abs)
           topics, probs = topic_model.fit_transform(topic_abs)
           return topic_model, topic_time, topics, probs
         
