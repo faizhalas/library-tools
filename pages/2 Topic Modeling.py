@@ -287,7 +287,7 @@ if uploaded_file is not None:
                   min_dist=0.0, metric='cosine', random_state=42)   
           cluster_model = KMeans(n_clusters=num_topic)
           nlp = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
-          topic_model = BERTopic(embedding_model=nlp, hdbscan_model=cluster_model, language="multilingual", umap_model=umap_model).fit(topic_abs)
+          topic_model = BERTopic(embedding_model=nlp, hdbscan_model=cluster_model, language="multilingual", umap_model=umap_model)
           topics, probs = topic_model.fit_transform(topic_abs)
           return topic_model, topic_time, topics, probs
         
