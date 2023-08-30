@@ -24,7 +24,7 @@ with mt1:
    st.text('')
    st.text('')
    st.divider()
-   st.error("This app works on Scopus's CSV file, Web of Science's Tab delimited file, and custom CSV file.", icon="🚨")
+   st.info("We now support The Lens's CSV file.", icon="🚨")
          
 with mt2:
    st.header("Before you start")
@@ -46,7 +46,7 @@ with mt2:
             st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
             st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
             st.text("3. Now you need to select what kind of keywords you need.")
-            st.text("4. Finally, you can download and use the file on VOSviewer, Bibliometrix, or else!")
+            st.text("4. Finally, you can download and use the file on VOSviewer, Bibliometrix, or put it on OpenRefine to get better result!")
             st.error("Please check what has changed. It's possible some keywords failed to find their roots.", icon="🚨")
             
         with tab3:
@@ -59,6 +59,9 @@ with mt2:
             +----------------+------------------------+---------------------------------+
             | Web of Science | Tab delimited file     | Author Keywords                 |
             |                | (.txt)                 | Keywords Plus                   |
+            +----------------+------------------------+---------------------------------+
+            | Lens.org       | Comma-separated values | Keywords (Scholarly Works)      |
+            |                | (.csv)                 |                                 |
             +----------------+------------------------+---------------------------------+
             | Other          | .csv                   | Change your column to 'Keyword' |
             +----------------+------------------------+---------------------------------+
@@ -86,7 +89,7 @@ with mt2:
             st.text("1. Put your file. We use abstract column for this process.")
             st.text("2. Choose your preferred method. LDA is the most widely used, whereas Biterm is appropriate for short text, and BERTopic works well for large text data as well as supports more than 50+ languages.")
             st.text("3. Finally, you can visualize your data.")
-            st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words. For other languages you can use stemming.", icon="💬")
+            st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words.", icon="💬")
             st.error("If you want to see the topic on another data (chats, questionnaire, or other text), change the column name of your table to 'Abstract'.", icon="🚨")
             
         with tab3:
@@ -99,6 +102,9 @@ with mt2:
             +----------------+------------------------+----------------------------------+
             | Web of Science | Tab delimited file     | Abstract                         |
             |                | (.txt)                 |                                  |
+            +----------------+------------------------+----------------------------------+
+            | Lens.org       | Comma-separated values | Abstract (Scholarly Works)       |
+            |                | (.csv)                 |                                  |
             +----------------+------------------------+----------------------------------+
             | Other          | .csv                   | Change your column to 'Abstract' |
             +----------------+------------------------+----------------------------------+
@@ -149,6 +155,9 @@ with mt2:
             | Web of Science | Tab delimited file     | Author Keywords                 |
             |                | (.txt)                 | Keywords Plus                   |
             +----------------+------------------------+---------------------------------+
+            | Lens.org       | Comma-separated values | Keywords (Scholarly Works)      |
+            |                | (.csv)                 |                                 |
+            +----------------+------------------------+---------------------------------+
             | Other          | .csv                   | Change your column to 'Keyword' |
             |                |                        | and separate the words with ';' |
             +----------------+------------------------+---------------------------------+
@@ -174,15 +183,20 @@ with mt2:
             
         with tab3:
             st.text("""
-            +----------------+------------------------+----------------+
-            |     Source     |       File Type        |     Column     |
-            +----------------+------------------------+----------------+
-            | Scopus         | Comma-separated values | (Source title, |
-            |                | (.csv)                 | Document Type, |
-            +----------------+------------------------| Cited by,      |
-            | Web of Science | Tab delimited file     | Year)          |
-            |                | (.txt)                 |                |
-            +----------------+------------------------+----------------+
+            +----------------+------------------------+--------------------+
+            |     Source     |       File Type        |     Column         |
+            +----------------+------------------------+--------------------+
+            | Scopus         | Comma-separated values | Source title,      |
+            |                | (.csv)                 | Document Type,     |
+            +----------------+------------------------| Cited by, Year     |
+            | Web of Science | Tab delimited file     |                    |
+            |                | (.txt)                 |                    |
+            +----------------+------------------------+--------------------+
+            | Lens.org       | Comma-separated values | Publication Year,  |
+            |                | (.csv)                 | Publication Type,  | 
+            |                |                        | Source Title,      |
+            |                |                        | Citing Works Count |
+            +----------------+------------------------+--------------------+
             """)          
 
         with tab4:  
