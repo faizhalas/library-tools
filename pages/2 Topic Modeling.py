@@ -101,6 +101,14 @@ def clean_csv(extype):
         words = [lemmatizer.lemmatize(word) for word in words]
         return ' '.join(words)
     paper['Abstract_lem'] = paper['Abstract_stop'].apply(lemmatize_words)
+
+    words_rmv = [word.strip() for word in words_to_remove.split(";")]
+    remove_dict = {word: None for word in words_rmv}
+    def remove_words(text):
+         words = text.split()
+         cleaned_words = [word for word in words if word not in remove_dict]
+         return ' '.join(cleaned_words) 
+    paper['Abstract_lem'] = paper['Abstract_lem'].map(remove_words)
      
     topic_abs = paper.Abstract_lem.values.tolist()
     return topic_abs, paper
@@ -134,14 +142,37 @@ if uploaded_file is not None:
     elif extype.endswith('.txt'):
          papers = conv_txt(extype)
           
-    topic_abs, paper=clean_csv(extype)
-    c1, c2 = st.columns([5,5])
+    c1, c2, c3 = st.columns([3,2,5])
     method = c1.selectbox(
             'Choose method',
             ('Choose...', 'pyLDA', 'Biterm', 'BERTopic'), on_change=reset_all)
-    c1.info("Don't do anything during the computing", icon="⚠️") 
     num_cho = c2.number_input('Choose number of topics', min_value=2, max_value=30, value=2)
-    if c2.button("Submit", on_click=reset_all):
+    words_to_remove = c3.text_input("Remove specific words. Separate words by semicolons (;)") 
+    
+    d1, d2 = st.columns([8,2]) 
+    d2.info("Don't do anything during the computing", icon="⚠️")
+    topic_abs, paper=clean_csv(extype) 
+
+    #===advance settings===
+    with d1.expander("🧮 Show advance settings"): 
+         t1, t2 = st.columns([5,5])
+         if method == 'pyLDA':
+              py_random_state = t1.number_input('Random state', min_value=0, max_value=None, step=1)
+              py_chunksize = t2.number_input('Chunk size', value=100 , min_value=10, max_value=None, step=1)
+         elif method == 'Biterm':
+              btm_seed = t1.number_input('Random state seed', value=100 , min_value=1, max_value=None, step=1)
+              btm_iterations = t2.number_input('Iterations number', value=20 , min_value=2, max_value=None, step=1)
+         elif method == 'BERTopic':
+              bert_top_n_words = t1.number_input('top_n_words', value=5 , min_value=5, max_value=25, step=1)
+              bert_random_state = t1.number_input('random_state', value=42 , min_value=1, max_value=None, step=1)
+              bert_n_components = t2.number_input('n_components', value=5 , min_value=1, max_value=None, step=1)
+              bert_n_neighbors = t2.number_input('n_neighbors', value=15 , min_value=1, max_value=None, step=1)
+              bert_embedding_model = st.radio(
+                   "embedding_model", 
+                   ["all-MiniLM-L6-v2", "en_core_web_sm", "paraphrase-multilingual-MiniLM-L12-v2"], index=0, horizontal=True)
+         else:
+              st.write('Please choose your preferred method')
+    if st.button("Submit", on_click=reset_all):
          num_topic = num_cho  
            
     #===topic===
@@ -149,7 +180,7 @@ if uploaded_file is not None:
         st.write('')
 
     elif method == 'pyLDA':       
-         tab1, tab2, tab3 = st.tabs(["📈 Generate visualization & Calculate coherence", "📃 Reference", "📓 Recommended Reading"])
+         tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
 
          with tab1:
          #===visualization===
@@ -162,8 +193,8 @@ if uploaded_file is not None:
                  lda_model = LdaModel(corpus=corpus,
                              id2word=id2word,
                              num_topics=num_topic, 
-                             random_state=0,
-                             chunksize=100,
+                             random_state=py_random_state,
+                             chunksize=py_chunksize,
                              alpha='auto',
                              per_word_topics=True)
      
@@ -180,7 +211,7 @@ if uploaded_file is not None:
               with st.spinner('Performing computations. Please wait ...'):
                    try:
                         py_lda_vis_html, coherence_lda, vis = pylda(extype)
-                        st.write('Coherence: ', (coherence_lda))
+                        st.write('Coherence score: ', coherence_lda)
                         st.components.v1.html(py_lda_vis_html, width=1500, height=800)
                         st.markdown('Copyright (c) 2015, Ben Mabey. https://github.com/bmabey/pyLDAvis')
                        
@@ -228,20 +259,21 @@ if uploaded_file is not None:
             docs_lens = list(map(len, docs_vec))
             biterms = btm.get_biterms(docs_vec)
             model = btm.BTM(
-              X, vocabulary, seed=12321, T=num_topic, M=20, alpha=50/8, beta=0.01)
-            model.fit(biterms, iterations=20)
+              X, vocabulary, seed=btm_seed, T=num_topic, M=20, alpha=50/8, beta=0.01)
+            model.fit(biterms, iterations=btm_iterations)
             p_zd = model.transform(docs_vec)
             coherence = model.coherence_
             phi = tmp.get_phi(model)
             topics_coords = tmp.prepare_coords(model)
             totaltop = topics_coords.label.values.tolist()
-            return topics_coords, phi, totaltop
+            perplexity = model.perplexity_
+            return topics_coords, phi, totaltop, perplexity
 
         tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
         with tab1:
              try:
                with st.spinner('Performing computations. Please wait ...'): 
-                    topics_coords, phi, totaltop = biterm_topic(extype)            
+                    topics_coords, phi, totaltop, perplexity = biterm_topic(extype)            
                     col1, col2 = st.columns([4,6])
                   
                     @st.cache_data(ttl=3600)
@@ -256,6 +288,8 @@ if uploaded_file is not None:
                          return btmvis_probs
                             
                     with col1:
+                         st.write('Perplexity score: ', perplexity)
+                         st.write('')
                          numvis = st.selectbox(
                               'Choose topic',
                               (totaltop), on_change=reset_biterm)
@@ -282,12 +316,22 @@ if uploaded_file is not None:
     elif method == 'BERTopic':
         @st.cache_data(ttl=3600, show_spinner=False)
         def bertopic_vis(extype):
+          if 'Publication Year' in paper.columns:
+               paper.rename(columns={'Publication Year': 'Year'}, inplace=True)
           topic_time = paper.Year.values.tolist()
-          umap_model = UMAP(n_neighbors=15, n_components=5, 
-                  min_dist=0.0, metric='cosine', random_state=42)   
+          umap_model = UMAP(n_neighbors=bert_n_neighbors, n_components=bert_n_components, 
+                  min_dist=0.0, metric='cosine', random_state=bert_random_state)   
           cluster_model = KMeans(n_clusters=num_topic)
-          nlp = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
-          topic_model = BERTopic(embedding_model=nlp, hdbscan_model=cluster_model, language="multilingual", umap_model=umap_model)
+          if bert_embedding_model == 'all-MiniLM-L6-v2':
+               emb_mod = 'all-MiniLM-L6-v2'
+               lang = 'en'
+          elif bert_embedding_model == 'en_core_web_sm':
+               emb_mod = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
+               lang = 'en'
+          elif bert_embedding_model == 'paraphrase-multilingual-MiniLM-L12-v2':
+               emb_mod = 'paraphrase-multilingual-MiniLM-L12-v2'
+               lang = 'multilingual'
+          topic_model = BERTopic(embedding_model=emb_mod, hdbscan_model=cluster_model, language=lang, umap_model=umap_model, top_n_words=bert_top_n_words)
           topics, probs = topic_model.fit_transform(topic_abs)
           return topic_model, topic_time, topics, probs
         
@@ -314,7 +358,7 @@ if uploaded_file is not None:
 
         @st.cache_data(ttl=3600, show_spinner=False)
         def Vis_Barchart(extype):
-          fig5 = topic_model.visualize_barchart(top_n_topics=num_topic, n_words=10)
+          fig5 = topic_model.visualize_barchart(top_n_topics=num_topic) #, n_words=10)
           return fig5
     
         @st.cache_data(ttl=3600, show_spinner=False)
@@ -327,42 +371,26 @@ if uploaded_file is not None:
         with tab1:
           try:
                with st.spinner('Performing computations. Please wait ...'):
+               
                     topic_model, topic_time, topics, probs = bertopic_vis(extype)
-                    #===visualization===
-                    viz = st.selectbox(
-                      'Choose visualization',
-                      ('Visualize Topics', 'Visualize Documents', 'Visualize Document Hierarchy', 'Visualize Topic Similarity', 'Visualize Terms', 'Visualize Topics over Time'))
-          
-                    if viz == 'Visualize Topics':
-                           with st.spinner('Performing computations. Please wait ...'):
-                                fig1 = Vis_Topics(extype)
-                                st.write(fig1)
-          
-                    elif viz == 'Visualize Documents':
-                           with st.spinner('Performing computations. Please wait ...'):
-                                fig2 = Vis_Documents(extype)
-                                st.write(fig2)
-                         
-                    elif viz == 'Visualize Document Hierarchy':
-                           with st.spinner('Performing computations. Please wait ...'):
-                                fig3 = Vis_Hierarchy(extype)
-                                st.write(fig3)
-                              
-                    elif viz == 'Visualize Topic Similarity':
-                           with st.spinner('Performing computations. Please wait ...'):
-                                fig4 = Vis_Heatmap(extype)
-                                st.write(fig4)
-                                  
-                    elif viz == 'Visualize Terms':
-                           with st.spinner('Performing computations. Please wait ...'):
-                                fig5 = Vis_Barchart(extype)
-                                st.write(fig5)
-                                       
-                    elif viz == 'Visualize Topics over Time':
-                           with st.spinner('Performing computations. Please wait ...'):
-                                fig6 = Vis_ToT(extype)
-                                st.write(fig6)
-                               
+                    fig1 = Vis_Topics(extype)
+                    fig2 = Vis_Documents(extype)
+                    fig3 = Vis_Hierarchy(extype)
+                    fig4 = Vis_Heatmap(extype)
+                    fig5 = Vis_Barchart(extype)
+                    fig6 = Vis_ToT(extype)
+                    with st.expander("Visualize Topics"):
+                        st.write(fig1)
+                    with st.expander("Visualize Terms"):
+                        st.write(fig5)
+                    with st.expander("Visualize Documents"):
+                        st.write(fig2)
+                    with st.expander("Visualize Document Hierarchy"):  
+                        st.write(fig3)
+                    with st.expander("Visualize Topic Similarity"):
+                        st.write(fig4)
+                    with st.expander("Visualize Topics over Time"):
+                        st.write(fig6)                             
                     
           except ValueError:
                st.error('🙇‍♂️ Please raise the number of topics and click submit')
