@@ -27,6 +27,10 @@ def get_ext(extype):
 @st.cache_data(ttl=3600)
 def upload(extype):
     papers = pd.read_csv(uploaded_file)
+    #lens.org
+    if 'Publication Year' in papers.columns:
+               papers.rename(columns={'Publication Year': 'Year', 'Citing Works Count': 'Cited by',
+                                     'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
     return papers
 
 @st.cache_data(ttl=3600)
