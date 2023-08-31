@@ -34,6 +34,7 @@ import en_core_web_sm
 import pipeline
 from html2image import Html2Image
 from umap import UMAP
+import os
 
 
 #===config===
@@ -72,6 +73,9 @@ def reset_biterm():
 
 def reset_all():
      st.cache_data.clear()
+
+#===avoiding deadlock===
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
         
 #===clean csv===
 @st.cache_data(ttl=3600, show_spinner=False)
