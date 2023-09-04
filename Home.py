@@ -9,6 +9,14 @@ st.set_page_config(
      layout="wide"
 )
 st.title('🥥 Coconut Library Tool')
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
 st.sidebar.success('Select page above')
 
 #===page===
@@ -208,7 +216,7 @@ with mt2:
 with mt3:
    st.header('Behind this app')
    st.subheader('Faizhal Arif Santosa')
-   st.text('Librarian. Polytechnic Institute of Nuclear Technology, National Research and Innovation Agency.')
+   st.text('Academic Librarian. Polytechnic Institute of Nuclear Technology, National Research and Innovation Agency.')
    st.text('')
    st.subheader('Crissandra George')
    st.text('Digital Collections Manager Librarian. Case Western Reserve University.')
@@ -216,7 +224,7 @@ with mt3:
    st.divider()
    st.header('Advisor')
    st.subheader('Dr. Manika Lamba')
-   st.text('Elected Standing Committee Member & Chair of Professional Development Sub-Committee at IFLA STL Section | Editor-in-Chief for IJLIS (IGI Global).')
+   st.text('Postdoctoral Research Associate. University of Illinois Urbana-Champaign.')
    st.text('')
    st.text('')
    st.divider()
