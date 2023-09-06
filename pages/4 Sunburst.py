@@ -12,6 +12,14 @@ st.set_page_config(
      layout="wide"
 )
 st.header("Data visualization")
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
 st.subheader('Put your CSV file and choose a visualization')
 
 #===clear cache===
