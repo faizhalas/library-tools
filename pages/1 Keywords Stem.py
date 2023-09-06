@@ -22,6 +22,14 @@ st.set_page_config(
      layout="wide"
 )
 st.header("Keywords Stem")
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
 st.subheader('Put your file here...')
 
 def reset_data():
