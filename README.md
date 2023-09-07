@@ -1,7 +1,8 @@
 # Coconut Library Tool
 
-[![Mirror](https://img.shields.io/website?up_color=green&up_message=mirror&url=https%3A%2F%2Fsites.google.com%2Fview%2Fcoconut-lib-tool)](https://sites.google.com/view/coconut-lib-tool)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fwww.coconut-libtool.com%2Fhome)](https://www.coconut-libtool.com/home)
 [![License](https://img.shields.io/github/license/faizhalas/library-tools?color=blue)](https://github.com/faizhalas/library-tools/blob/main/LICENSE)
+[![DOI](https://zenodo.org/badge/607498534.svg)](https://zenodo.org/badge/latestdoi/607498534)
 
 
 ### What is Coconut?
@@ -18,4 +19,9 @@ We cannot thank everyone enough for who has assisted in the creation of this too
 [share_img]: https://raw.githubusercontent.com/faizhalas/library-tools/main/images/coconut.jpg
 
 
+### Citation
+To cite the Coconut Library Tool, please use the following reference:
+```
+Santosa, Faizhal Arif, George, Crissandra J., & Lamba, Manika. (2023). Coconut Library Tool (1.0.0). Zenodo. https://doi.org/10.5281/zenodo.8323458
+```
 
