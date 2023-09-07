@@ -1,7 +1,6 @@
 pip
 scikit-learn
 gensim
-matplotlib
 nltk
 numpy
 pandas
