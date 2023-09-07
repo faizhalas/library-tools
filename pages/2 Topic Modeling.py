@@ -17,7 +17,6 @@ from pprint import pprint
 import pickle
 import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
-import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
 from io import StringIO
 from ipywidgets.embed import embed_minimal_html
