@@ -32,7 +32,7 @@ with mt1:
    st.text('')
    st.text('')
    st.divider()
-   st.info("We now support The Lens's CSV file.", icon="🚨")
+   st.info("We moved to https://www.coconut-libtool.com/", icon="🚨")
          
 with mt2:
    st.header("Before you start")
