@@ -34,6 +34,7 @@ import pipeline
 from html2image import Html2Image
 from umap import UMAP
 import os
+import time
 
 
 #===config===
@@ -96,7 +97,7 @@ def clean_csv(extype):
     paper = paper[~paper.Abstract.str.contains("STRAIT")]
             
         #===mapping===
-    paper['Abstract_pre'] = paper['Abstract'].map(lambda x: re.sub('[,:;\.!-?•=]', '', x))
+    paper['Abstract_pre'] = paper['Abstract'].map(lambda x: re.sub('[,:;\.!-?•=]', ' ', x))
     paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: x.lower())
     paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: re.sub('©.*', '', x))
     paper['Abstract_pre'] = paper['Abstract_pre'].str.replace('\u201c|\u201d', '', regex=True) 
@@ -157,7 +158,7 @@ if uploaded_file is not None:
     method = c1.selectbox(
             'Choose method',
             ('Choose...', 'pyLDA', 'Biterm', 'BERTopic'), on_change=reset_all)
-    num_cho = c2.number_input('Choose number of topics', min_value=2, max_value=30, value=2)
+    num_cho = c2.number_input('Choose number of topics', min_value=2, max_value=30, value=5)
     words_to_remove = c3.text_input("Remove specific words. Separate words by semicolons (;)") 
     
     d1, d2 = st.columns([8,2]) 
@@ -384,12 +385,30 @@ if uploaded_file is not None:
                with st.spinner('Performing computations. Please wait ...'):
                
                     topic_model, topic_time, topics, probs = bertopic_vis(extype)
+                    time.sleep(.5)
+                    st.toast('Visualize Topics', icon='🏃')
                     fig1 = Vis_Topics(extype)
+                   
+                    time.sleep(.5)
+                    st.toast('Visualize Document', icon='🏃')
                     fig2 = Vis_Documents(extype)
+                   
+                    time.sleep(.5)
+                    st.toast('Visualize Document Hierarchy', icon='🏃')
                     fig3 = Vis_Hierarchy(extype)
+                   
+                    time.sleep(.5)
+                    st.toast('Visualize Topic Similarity', icon='🏃')
                     fig4 = Vis_Heatmap(extype)
+                   
+                    time.sleep(.5)
+                    st.toast('Visualize Terms', icon='🏃')
                     fig5 = Vis_Barchart(extype)
+                    
+                    time.sleep(.5)
+                    st.toast('Visualize Topics over Time', icon='🏃')
                     fig6 = Vis_ToT(extype)
+                   
                     with st.expander("Visualize Topics"):
                         st.write(fig1)
                     with st.expander("Visualize Terms"):
