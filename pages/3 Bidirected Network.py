@@ -17,6 +17,7 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 import sys
+import time
 
 #===config===
 st.set_page_config(
@@ -83,7 +84,7 @@ if uploaded_file is not None:
     with col1:
         method = st.selectbox(
              'Choose method',
-           ('Stemming', 'Lemmatization'), on_change=reset_all)
+           ('Lemmatization', 'Stemming'), on_change=reset_all)
     with col2:
         keyword = st.selectbox(
             'Choose column',
@@ -236,6 +237,8 @@ if uploaded_file is not None:
                      return_value = agraph(nodes=nodes, 
                                            edges=edges, 
                                            config=config)
+                     time.sleep(1)
+                     st.toast('Process completed', icon='📈')
     with tab2:
          st.markdown('**Santosa, F. A. (2023). Adding Perspective to the Bibliometric Mapping Using Bidirected Graph. Open Information Science, 7(1), 20220152.** https://doi.org/10.1515/opis-2022-0152')
          
