@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
+import sys
 
 #===config===
 st.set_page_config(
@@ -77,7 +78,11 @@ if uploaded_file is not None:
     
     with tab1:    
         #===sunburst===
-        papers, MIN, MAX, GAP = get_minmax(extype)
+        try:
+            papers, MIN, MAX, GAP = get_minmax(extype)
+        except KeyError:
+            st.error('Error: Please check again your columns.')
+            sys.exit(1)
         
         if (GAP != 0):
             YEAR = st.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_all)
