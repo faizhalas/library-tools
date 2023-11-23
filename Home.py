@@ -94,27 +94,26 @@ with mt2:
             st.write('Lamba, M., & Madhusudhan, M. (2021, July 31). Topic Modeling. Text Mining for Information Professionals, 105–137. https://doi.org/10.1007/978-3-030-85085-2_4')
 
         with tab2:
-            st.text("1. Put your file. We use abstract column for this process.")
+            st.text("1. Put your file. Choose your preferred column.")
             st.text("2. Choose your preferred method. LDA is the most widely used, whereas Biterm is appropriate for short text, and BERTopic works well for large text data as well as supports more than 50+ languages.")
             st.text("3. Finally, you can visualize your data.")
             st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words.", icon="💬")
-            st.error("If you want to see the topic on another data (chats, questionnaire, or other text), change the column name of your table to 'Abstract'.", icon="🚨")
             
         with tab3:
             st.text("""
             +----------------+------------------------+----------------------------------+
             |     Source     |       File Type        |              Column              |
             +----------------+------------------------+----------------------------------+
-            | Scopus         | Comma-separated values | Abstract                         |
-            |                | (.csv)                 |                                  |
-            +----------------+------------------------+----------------------------------+
-            | Web of Science | Tab delimited file     | Abstract                         |
+            | Scopus         | Comma-separated values | Choose your preferred column     |
+            |                | (.csv)                 | that you have                    |
+            +----------------+------------------------|                                  |
+            | Web of Science | Tab delimited file     |                                  |
             |                | (.txt)                 |                                  |
-            +----------------+------------------------+----------------------------------+
-            | Lens.org       | Comma-separated values | Abstract (Scholarly Works)       |
+            +----------------+------------------------|                                  |
+            | Lens.org       | Comma-separated values |                                  |
             |                | (.csv)                 |                                  |
-            +----------------+------------------------+----------------------------------+
-            | Other          | .csv                   | Change your column to 'Abstract' |
+            +----------------+------------------------|                                  |
+            | Other          | .csv                   |                                  |
             +----------------+------------------------+----------------------------------+
             """)
 
