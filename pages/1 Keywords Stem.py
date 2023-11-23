@@ -187,8 +187,14 @@ if uploaded_file is not None:
          def table_keyword(extype):
              keytab = key.drop(['index'], axis=1).rename(columns={0: 'old'})
              return keytab
-         keytab = table_keyword(extype)
-         st.dataframe(keytab, use_container_width=True)
+         #===coloring the same keywords===
+         @st.cache_data(ttl=3600)
+         def highlight_cells(value):
+             if keytab['new'].duplicated(keep=False).any() and keytab['new'].duplicated(keep=False)[keytab['new'] == value].any():
+                 return 'background-color: yellow'
+             return '' 
+         keytab = table_keyword(extype) 
+         st.dataframe(keytab.style.applymap(highlight_cells, subset=['new']), use_container_width=True, hide_index=True)
                   
          @st.cache_data(ttl=3600)
          def convert_dfs(extype):
