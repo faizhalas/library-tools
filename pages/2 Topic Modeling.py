@@ -85,46 +85,6 @@ def reset_all():
 #===avoiding deadlock===
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
         
-#===clean csv===
-@st.cache_data(ttl=3600, show_spinner=False)
-def clean_csv(extype):
-    try:
-        paper = papers.dropna(subset=['Abstract'])
-    except KeyError:
-        st.error('Error: Please check your Abstract column.')
-        sys.exit(1)
-    paper = paper[~paper.Abstract.str.contains("No abstract available")]
-    paper = paper[~paper.Abstract.str.contains("STRAIT")]
-            
-        #===mapping===
-    paper['Abstract_pre'] = paper['Abstract'].map(lambda x: re.sub('[,:;\.!-?•=]', ' ', x))
-    paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: x.lower())
-    paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: re.sub('©.*', '', x))
-    paper['Abstract_pre'] = paper['Abstract_pre'].str.replace('\u201c|\u201d', '', regex=True) 
-          
-         #===stopword removal===
-    stop = stopwords.words('english')
-    paper['Abstract_stop'] = paper['Abstract_pre'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
-     
-        #===lemmatize===
-    lemmatizer = WordNetLemmatizer()
-    def lemmatize_words(text):
-        words = text.split()
-        words = [lemmatizer.lemmatize(word) for word in words]
-        return ' '.join(words)
-    paper['Abstract_lem'] = paper['Abstract_stop'].apply(lemmatize_words)
-
-    words_rmv = [word.strip() for word in words_to_remove.split(";")]
-    remove_dict = {word: None for word in words_rmv}
-    def remove_words(text):
-         words = text.split()
-         cleaned_words = [word for word in words if word not in remove_dict]
-         return ' '.join(cleaned_words) 
-    paper['Abstract_lem'] = paper['Abstract_lem'].map(remove_words)
-     
-    topic_abs = paper.Abstract_lem.values.tolist()
-    return topic_abs, paper
-
 #===upload file===
 @st.cache_data(ttl=3600)
 def upload(file):
@@ -153,15 +113,58 @@ if uploaded_file is not None:
          papers = upload(extype) 
     elif extype.endswith('.txt'):
          papers = conv_txt(extype)
-          
-    c1, c2, c3 = st.columns([3,2,5])
+
+    coldf = sorted(papers.select_dtypes(include=['object']).columns.tolist())
+        
+    c1, c2 = st.columns([3,4])
     method = c1.selectbox(
             'Choose method',
             ('Choose...', 'pyLDA', 'Biterm', 'BERTopic'), on_change=reset_all)
-    num_cho = c2.number_input('Choose number of topics', min_value=2, max_value=30, value=5)
-    words_to_remove = c3.text_input("Remove specific words. Separate words by semicolons (;)") 
+    num_cho = c1.number_input('Choose number of topics', min_value=2, max_value=30, value=5)
+    ColCho = c2.selectbox(
+            'Choose column',
+            (coldf), on_change=reset_all)
+    words_to_remove = c2.text_input("Remove specific words. Separate words by semicolons (;)")
+    rem_copyright = c1.toggle('Remove copyright statement', value=True, on_change=reset_all)
+    rem_punc = c2.toggle('Remove punctuation', value=True, on_change=reset_all)
+     
+    #===clean csv===
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def clean_csv(extype):
+        paper = papers.dropna(subset=[ColCho])
+                 
+        #===mapping===
+        paper['Abstract_pre'] = paper[ColCho].map(lambda x: x.lower())
+        if rem_punc:
+             paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: re.sub('[,:;\.!-?•=]', ' ', x))
+             paper['Abstract_pre'] = paper['Abstract_pre'].str.replace('\u201c|\u201d', '', regex=True) 
+        if rem_copyright:  
+             paper['Abstract_pre'] = paper['Abstract_pre'].map(lambda x: re.sub('©.*', '', x))
+        
+        #===stopword removal===
+        stop = stopwords.words('english')
+        paper['Abstract_stop'] = paper['Abstract_pre'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
+          
+        #===lemmatize===
+        lemmatizer = WordNetLemmatizer()
+        def lemmatize_words(text):
+            words = text.split()
+            words = [lemmatizer.lemmatize(word) for word in words]
+            return ' '.join(words)
+        paper['Abstract_lem'] = paper['Abstract_stop'].apply(lemmatize_words)
     
-    d1, d2 = st.columns([8,2]) 
+        words_rmv = [word.strip() for word in words_to_remove.split(";")]
+        remove_dict = {word: None for word in words_rmv}
+        def remove_words(text):
+             words = text.split()
+             cleaned_words = [word for word in words if word not in remove_dict]
+             return ' '.join(cleaned_words) 
+        paper['Abstract_lem'] = paper['Abstract_lem'].map(remove_words)
+         
+        topic_abs = paper.Abstract_lem.values.tolist()
+        return topic_abs, paper
+
+    d1, d2 = st.columns([7,3]) 
     d2.info("Don't do anything during the computing", icon="⚠️")
     topic_abs, paper=clean_csv(extype) 
 
@@ -328,9 +331,6 @@ if uploaded_file is not None:
     elif method == 'BERTopic':
         @st.cache_data(ttl=3600, show_spinner=False)
         def bertopic_vis(extype):
-          if 'Publication Year' in paper.columns:
-               paper.rename(columns={'Publication Year': 'Year'}, inplace=True)
-          topic_time = paper.Year.values.tolist()
           umap_model = UMAP(n_neighbors=bert_n_neighbors, n_components=bert_n_components, 
                   min_dist=0.0, metric='cosine', random_state=bert_random_state)   
           cluster_model = KMeans(n_clusters=num_topic)
@@ -345,7 +345,7 @@ if uploaded_file is not None:
                lang = 'multilingual'
           topic_model = BERTopic(embedding_model=emb_mod, hdbscan_model=cluster_model, language=lang, umap_model=umap_model, top_n_words=bert_top_n_words)
           topics, probs = topic_model.fit_transform(topic_abs)
-          return topic_model, topic_time, topics, probs
+          return topic_model, topics, probs
         
         @st.cache_data(ttl=3600, show_spinner=False)
         def Vis_Topics(extype):
@@ -370,21 +370,15 @@ if uploaded_file is not None:
 
         @st.cache_data(ttl=3600, show_spinner=False)
         def Vis_Barchart(extype):
-          fig5 = topic_model.visualize_barchart(top_n_topics=num_topic) #, n_words=10)
+          fig5 = topic_model.visualize_barchart(top_n_topics=num_topic)
           return fig5
-    
-        @st.cache_data(ttl=3600, show_spinner=False)
-        def Vis_ToT(extype):
-          topics_over_time = topic_model.topics_over_time(topic_abs, topic_time)
-          fig6 = topic_model.visualize_topics_over_time(topics_over_time)
-          return fig6
        
         tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
         with tab1:
           try:
                with st.spinner('Performing computations. Please wait ...'):
                
-                    topic_model, topic_time, topics, probs = bertopic_vis(extype)
+                    topic_model, topics, probs = bertopic_vis(extype)
                     time.sleep(.5)
                     st.toast('Visualize Topics', icon='🏃')
                     fig1 = Vis_Topics(extype)
@@ -404,10 +398,6 @@ if uploaded_file is not None:
                     time.sleep(.5)
                     st.toast('Visualize Terms', icon='🏃')
                     fig5 = Vis_Barchart(extype)
-                    
-                    time.sleep(.5)
-                    st.toast('Visualize Topics over Time', icon='🏃')
-                    fig6 = Vis_ToT(extype)
                    
                     with st.expander("Visualize Topics"):
                         st.write(fig1)
@@ -419,9 +409,7 @@ if uploaded_file is not None:
                         st.write(fig3)
                     with st.expander("Visualize Topic Similarity"):
                         st.write(fig4)
-                    with st.expander("Visualize Topics over Time"):
-                        st.write(fig6)                             
-                    
+                                        
           except ValueError:
                st.error('🙇‍♂️ Please raise the number of topics and click submit')
           
