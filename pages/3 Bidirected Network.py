@@ -25,7 +25,7 @@ st.set_page_config(
      page_icon="🥥",
      layout="wide"
 )
-st.header("Biderected Keywords Network")
+st.header("Bidirected Keywords Network")
 hide_streamlit_style = """
             <style>
             #MainMenu {visibility: hidden;}
