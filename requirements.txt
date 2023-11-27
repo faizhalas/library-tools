@@ -1,4 +1,5 @@
 pip
+streamlit
 scikit-learn
 gensim
 nltk
@@ -22,7 +23,7 @@ bitermplus
 tmplot
 tomotopy
 pipeline
-spacy==3.5.0
-https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
+spacy==3.7.2
+https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1.tar.gz
 html2image
 umap-learn
