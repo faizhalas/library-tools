@@ -27,12 +27,11 @@ with mt1:
    st.write("The coconut tree is known as one of the most useful trees. Each part of this important tree has an integral function from the leaves producing oxygen through photosynthesis to the shells, oil, wood, flowers, and husks being used in a variety of ways, such as building houses, cooking, and more.")
    st.write("Our philosophy aspires to emulate this highly cohesive and functionally unified environment where each part serves a specific function to the greater whole. 🌴 Just like the coconut tree, the Coconut Library Tool is the all-in-one data mining and textual analysis tool for librarians or anyone interested in these applications. Our tool does not require any prior knowledge of coding or programming, making it approachable and great for users who want to test out these data analysis and visualization techniques.")  
    st.write("We cannot thank everyone enough for who has assisted in the creation of this tool. Due to each individual’s efforts, science will advance, allowing for multiple analysis and visualization techniques to coexist within this one tool. 🧑🏻‍🤝‍🧑🏾")
-   st.text('')
    st.divider()
    st.text('We support Scopus, Web of Science, Lens, as well as personalized CSV files. Further information can be found in the "How to" section.')
-   st.text('')
    st.divider()
-   st.info("We moved to https://www.coconut-libtool.com/", icon="🚨")
+   st.write('To cite the Coconut Library Tool, please use the following reference:') 
+   st.info("Santosa, Faizhal Arif, George, Crissandra J., & Lamba, Manika. (2023). Coconut Library Tool (1.0.0). Zenodo. https://doi.org/10.5281/zenodo.8323458", icon="✍️")
          
 with mt2:
    st.header("Before you start")
