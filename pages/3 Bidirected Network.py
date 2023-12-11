@@ -165,24 +165,32 @@ if uploaded_file is not None:
         def freqitem(extype):
             freq_item = fpgrowth(df, min_support=supp, use_colnames=True, max_len=maxlen)
             return freq_item
-        
-        @st.cache_data(ttl=3600)
-        def arm_table(extype):
-            res = association_rules(freq_item, metric='confidence', min_threshold=conf) 
-            res = res[['antecedents', 'consequents', 'antecedent support', 'consequent support', 'support', 'confidence', 'lift', 'conviction']]
-            res['antecedents'] = res['antecedents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
-            res['consequents'] = res['consequents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
-            restab = res
-            return res, restab
 
         freq_item = freqitem(extype)
-        st.write('🚨 The more data you have, the longer you will have to wait.')
+        col1, col2 = st.columns(2)
+        with col1:
+             st.write('🚨 The more data you have, the longer you will have to wait.')
+        with col2:
+             showall = st.checkbox('Show all nodes', value=True, on_change=reset_all)
 
+        @st.cache_data(ttl=3600)
+        def arm_table(extype):
+            restab = association_rules(freq_item, metric='confidence', min_threshold=conf) 
+            restab = restab[['antecedents', 'consequents', 'antecedent support', 'consequent support', 'support', 'confidence', 'lift', 'conviction']]
+            restab['antecedents'] = restab['antecedents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
+            restab['consequents'] = restab['consequents'].apply(lambda x: ', '.join(list(x))).astype('unicode')
+            if showall:
+                 restab['Show'] = True
+            else:
+                 restab['Show'] = False
+            return restab 
+         
         if freq_item.empty:
             st.error('Please lower your value.', icon="🚨")
         else:
-            res, restab = arm_table(extype)
-            st.dataframe(restab, use_container_width=True)
+            restab = arm_table(extype)
+            restab = st.data_editor(restab, use_container_width=True)
+            res = restab[restab['Show'] == True] 
                    
              #===visualize===
                 
@@ -191,8 +199,8 @@ if uploaded_file is not None:
                      @st.cache_data(ttl=3600)
                      def map_node(extype):
                         res['to'] = res['antecedents'] + ' → ' + res['consequents'] + '\n Support = ' +  res['support'].astype(str) + '\n Confidence = ' +  res['confidence'].astype(str) + '\n Conviction = ' +  res['conviction'].astype(str)
-                        res_ant = res[['antecedents','antecedent support']].rename(columns={'antecedents': 'node', 'antecedent support': 'size'}) #[['antecedents','antecedent support']]
-                        res_con = res[['consequents','consequent support']].rename(columns={'consequents': 'node', 'consequent support': 'size'}) #[['consequents','consequent support']]
+                        res_ant = res[['antecedents','antecedent support']].rename(columns={'antecedents': 'node', 'antecedent support': 'size'}) 
+                        res_con = res[['consequents','consequent support']].rename(columns={'consequents': 'node', 'consequent support': 'size'}) 
                         res_node = pd.concat([res_ant, res_con]).drop_duplicates(keep='first')
                         return res_node, res
                      
@@ -239,6 +247,7 @@ if uploaded_file is not None:
                                            config=config)
                      time.sleep(1)
                      st.toast('Process completed', icon='📈')
+                    
     with tab2:
          st.markdown('**Santosa, F. A. (2023). Adding Perspective to the Bibliometric Mapping Using Bidirected Graph. Open Information Science, 7(1), 20220152.** https://doi.org/10.1515/opis-2022-0152')
          
