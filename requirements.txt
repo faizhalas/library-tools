@@ -12,7 +12,6 @@ pyldavis
 regex
 seaborn
 setuptools
-streamlit
 streamlit-agraph
 umap-learn
 wordcloud
