@@ -194,11 +194,11 @@ if uploaded_file is not None:
                  return 'background-color: yellow'
              return '' 
          keytab = table_keyword(extype) 
-         csv_result = st.data_editor(keytab.style.applymap(highlight_cells, subset=['new']), use_container_width=True, hide_index=True)
+         st.dataframe(keytab.style.applymap(highlight_cells, subset=['new']), use_container_width=True, hide_index=True)
                   
          @st.cache_data(ttl=3600)
          def convert_dfs(extype):
-             return csv_result.to_csv(index=False).encode('utf-8')
+             return key.to_csv(index=False).encode('utf-8')
                 
          csv = convert_dfs(extype)
 
