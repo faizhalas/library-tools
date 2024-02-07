@@ -194,14 +194,13 @@ if uploaded_file is not None:
                  return 'background-color: yellow'
              return '' 
          keytab = table_keyword(extype) 
-         st.dataframe(keytab.style.applymap(highlight_cells, subset=['new']), use_container_width=True, hide_index=True)
+         csv_result = st.data_editor(keytab.style.applymap(highlight_cells, subset=['new']), use_container_width=True, hide_index=True)
                   
          @st.cache_data(ttl=3600)
          def convert_dfs(extype):
-             return key.to_csv(index=False).encode('utf-8')
+             return csv_result.to_csv(index=False).encode('utf-8')
                 
-         csv_result = convert_dfs(extype)
-         csv = st.data_editor(csv_result) 
+         csv = convert_dfs(extype)
 
          st.download_button(
              "Press to download keywords 👈",
