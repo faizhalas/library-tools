@@ -16,7 +16,7 @@ We cannot thank everyone enough for who has assisted in the creation of this too
 [![Preview][share_img]][share_link]
 
 [share_link]: https://www.coconut-libtool.com
-[share_img]: https://raw.githubusercontent.com/faizhalas/library-tools/main/images/coconut.jpg
+[share_img]: https://raw.githubusercontent.com/faizhalas/library-tools/main/images/coconut-web.jpg
 
 
 ### Citation
