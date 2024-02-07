@@ -156,7 +156,7 @@ if uploaded_file is not None:
      tab1, tab2, tab3, tab4 = st.tabs(["📥 Result", "📥 List of Keywords", "📃 Reference", "📃 Recommended Reading"])
      
      with tab1:
-         st.dataframe(keywords, use_container_width=True)
+         st.dataframe(keywords, use_container_width=True, hide_index=True)
          @st.cache_data(ttl=3600)
          def convert_df(extype):
             return keywords.to_csv(index=False).encode('utf-8')
@@ -185,7 +185,7 @@ if uploaded_file is not None:
      with tab2:
          @st.cache_data(ttl=3600)
          def table_keyword(extype):
-             keytab = key.drop(['index'], axis=1).rename(columns={0: 'old'})
+             keytab = key.drop(['index'], axis=1).rename(columns={0: 'label'})
              return keytab
          #===coloring the same keywords===
          @st.cache_data(ttl=3600)
@@ -200,7 +200,8 @@ if uploaded_file is not None:
          def convert_dfs(extype):
              return key.to_csv(index=False).encode('utf-8')
                 
-         csv = convert_dfs(extype)
+         csv_result = convert_dfs(extype)
+         csv = st.data_editor(csv_result) 
 
          st.download_button(
              "Press to download keywords 👈",
