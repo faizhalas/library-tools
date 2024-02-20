@@ -31,7 +31,7 @@ with mt1:
    st.text('We support Scopus, Web of Science, Lens, as well as personalized CSV files. Further information can be found in the "How to" section.')
    st.divider()
    st.write('To cite the Coconut Library Tool, please use the following reference:') 
-   st.info("Santosa, Faizhal Arif, George, Crissandra J., & Lamba, Manika. (2023). Coconut Library Tool (1.0.0). Zenodo. https://doi.org/10.5281/zenodo.8323458", icon="✍️")
+   st.info("Santosa, Faizhal Arif, George, Crissandra J., & Lamba, Manika. (2023). Coconut Library Tool. Zenodo. https://doi.org/10.5281/zenodo.8323458", icon="✍️")
          
 with mt2:
    st.header("Before you start")
