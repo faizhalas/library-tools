@@ -20,6 +20,6 @@ We cannot thank everyone enough for who has assisted in the creation of this too
 ### Citation
 To cite the Coconut Libtool, please use the following reference:
 ```
-Santosa, Faizhal Arif, George, Crissandra J., & Lamba, Manika. (2023). Coconut Libtool. Zenodo. https://doi.org/10.5281/zenodo.8323458
+Santosa, Faizhal Arif, Lamba, Manika, & George, Crissandra J. (2023). Coconut Libtool. Zenodo. https://doi.org/10.5281/zenodo.8323458
 ```
 
