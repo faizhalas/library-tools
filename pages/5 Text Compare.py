@@ -90,7 +90,6 @@ def comparison2(selected_column):
         st.components.v1.html(html, width=1000, height=600)
     return
 
-
 if __name__ == '__main__':
     uploaded_file = st.file_uploader("Choose a file", type=["csv", "txt"])
     if uploaded_file is not None:
