@@ -127,5 +127,3 @@ if __name__ == '__main__':
             comparison2(choice)
 
 
-
-
