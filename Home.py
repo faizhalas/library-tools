@@ -31,7 +31,7 @@ with mt1:
    st.text('We support Scopus, Web of Science, Lens, as well as personalized CSV files. Further information can be found in the "How to" section.')
    st.divider()
    st.write('To cite the Coconut Libtool, please use the following reference:') 
-   st.info("Santosa, Faizhal Arif, George, Crissandra J., & Lamba, Manika. (2023). Coconut Libtool. Zenodo. https://doi.org/10.5281/zenodo.8323458", icon="✍️")
+   st.info("Santosa, Faizhal Arif, Lamba, Manika, & George, Crissandra J. (2023). Coconut Libtool. Zenodo. https://doi.org/10.5281/zenodo.8323458", icon="✍️")
          
 with mt2:
    st.header("Before you start")
@@ -216,11 +216,11 @@ with mt3:
    st.subheader('Faizhal Arif Santosa')
    st.text('Librarian. National Research and Innovation Agency.')
    st.text('')
+   st.subheader('Dr. Manika Lamba')
+   st.text('Postdoctoral Research Associate. University of Illinois Urbana-Champaign.')  
+   st.text('')
    st.subheader('Crissandra George')
    st.text('Digital Collections Manager Librarian. Case Western Reserve University.')
-   st.text('')
-   st.subheader('Dr. Manika Lamba')
-   st.text('Postdoctoral Research Associate. University of Illinois Urbana-Champaign.')
    st.text('')
    st.text('')
    st.divider()

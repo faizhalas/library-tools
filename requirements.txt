@@ -27,3 +27,5 @@ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1
 html2image
 umap-learn
 scattertext
+git+https://github.com/faizhalas/burst_detection
+matplotlib
