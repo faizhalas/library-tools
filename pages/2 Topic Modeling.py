@@ -187,9 +187,13 @@ if uploaded_file is not None:
                    ["all-MiniLM-L6-v2", "paraphrase-multilingual-MiniLM-L12-v2", "en_core_web_md"], index=0, horizontal=True)
          else:
               st.write('Please choose your preferred method')
+    
+    if method == 'BERTopic':
+        st.info('BERTopic is an expensive process when dealing with a large volume of text with our existing resources. Please kindly wait until the visualization appears.', icon="ℹ️")
+             
     if st.button("Submit", on_click=reset_all):
          num_topic = num_cho  
-           
+          
     #===topic===
     if method == 'Choose...':
         st.write('')
