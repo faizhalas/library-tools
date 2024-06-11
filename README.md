@@ -19,6 +19,13 @@ We cannot thank everyone enough for who has assisted in the creation of this too
 
 ### Citation
 To cite the Coconut Libtool, please use the following reference:
+
+#### Paper
+```
+Santosa, F. A., Lamba, M., George, C., & Downie, J. S. (2024). Coconut Libtool: Bridging Textual Analysis Gaps for Non-Programmers. arXiv. https://doi.org/10.48550/ARXIV.2406.05949
+```
+
+#### Code
 ```
 Santosa, Faizhal Arif, Lamba, Manika, & George, Crissandra J. (2023). Coconut Libtool. Zenodo. https://doi.org/10.5281/zenodo.8323458
 ```
