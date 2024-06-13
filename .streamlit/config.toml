@@ -1,2 +1,9 @@
 [theme]
 base="light"
+
+[client]
+showErrorDetails = false
+showSidebarNavigation = false
+
+[server]
+maxUploadSize = 100
