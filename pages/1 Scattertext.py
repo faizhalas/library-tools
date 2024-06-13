@@ -12,18 +12,33 @@ import sys
 
 #===config===
 st.set_page_config(
-     page_title="Coconut",
-     page_icon="🥥",
-     layout="wide"
+    page_title="Coconut",
+    page_icon="🥥",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
-st.header("Scattertext")
+
 hide_streamlit_style = """
             <style>
-            #MainMenu {visibility: hidden;}
+            #MainMenu 
+            {visibility: hidden;}
             footer {visibility: hidden;}
+            [data-testid="collapsedControl"] {display: none}
             </style>
             """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+with st.popover("🔗 Menu"):
+    st.page_link("Home.py", label="Home", icon="🏠")
+    st.page_link("pages/1 Scattertext.py", label="Scattertext", icon="1️⃣")
+    st.page_link("pages/2 Topic Modeling.py", label="Topic Modeling", icon="2️⃣")
+    st.page_link("pages/3 Bidirected Network.py", label="Bidirected Network", icon="3️⃣")
+    st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
+    st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
+    st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    
+st.header("Scattertext", anchor=False)
+st.subheader('Put your file here...', anchor=False)
 
 def reset_all():
      st.cache_data.clear()
@@ -32,8 +47,6 @@ def reset_all():
 def get_ext(extype):
     extype = uploaded_file.name
     return extype
-
-st.subheader('Put your file here...')
 
 #===upload file===
 @st.cache_data(ttl=3600)
@@ -64,7 +77,7 @@ def get_data(extype):
     list_abstract = [col for col in df_col if abstract_pattern.search(col)]
 
     if all(col in df_col for col in list_title) and all(col in df_col for col in list_abstract):
-        selected_cols = list_title + list_abstract
+        selected_cols = list_abstract + list_title
     elif all(col in df_col for col in list_title):
         selected_cols = list_title
     elif all(col in df_col for col in list_abstract):
@@ -150,7 +163,8 @@ def running_scattertext(cat_col, catname, noncatname):
                                                 not_category_name = noncatname,
                                                 width_in_pixels = 900,
                                                 minimum_term_frequency = 0,
-                                                metadata = filtered_df['Title'])
+                                                metadata = filtered_df['Title'],
+                                                save_svg_button=True)
     
         except KeyError:
             html = stx.produce_scattertext_explorer(corpus,
@@ -167,7 +181,7 @@ def running_scattertext(cat_col, catname, noncatname):
         st.components.v1.html(html, height = 1200, scrolling = True) 
 
     except ValueError:
-        st.warning('Please increase the Minimum term count in the advanced settings.', icon="⚠️")
+        st.warning('Please decrease the Minimum term count in the advanced settings.', icon="⚠️")
         sys.exit()
 
 @st.cache_data(ttl=3600)
@@ -209,7 +223,7 @@ def df_years(first_range, second_range):
     return filtered_df 
 
 #===Read data===
-uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
 
 if uploaded_file is not None:
     extype = get_ext(uploaded_file)
