@@ -17,20 +17,34 @@ import sys
 
 #===config===
 st.set_page_config(
-     page_title="Coconut",
-     page_icon="🥥",
-     layout="wide"
+    page_title="Coconut",
+    page_icon="🥥",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
-st.header("Keywords Stem")
+
 hide_streamlit_style = """
             <style>
-            #MainMenu {visibility: hidden;}
+            #MainMenu 
+            {visibility: hidden;}
             footer {visibility: hidden;}
+            [data-testid="collapsedControl"] {display: none}
             </style>
             """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-st.subheader('Put your file here...')
+with st.popover("🔗 Menu"):
+    st.page_link("Home.py", label="Home", icon="🏠")
+    st.page_link("pages/1 Scattertext.py", label="Scattertext", icon="1️⃣")
+    st.page_link("pages/2 Topic Modeling.py", label="Topic Modeling", icon="2️⃣")
+    st.page_link("pages/3 Bidirected Network.py", label="Bidirected Network", icon="3️⃣")
+    st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
+    st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
+    st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    
+
+st.header("Keywords Stem", anchor=False)
+st.subheader('Put your file here...', anchor=False)
 
 def reset_data():
      st.cache_data.clear()
@@ -72,7 +86,7 @@ def get_data(extype):
     list_of_column_key = [k for k in list_of_column_key if 'Keyword' in k]
     return list_of_column_key
 
-uploaded_file = st.file_uploader("Choose your a file", type=['csv','txt'], on_change=reset_data)
+uploaded_file = st.file_uploader('', type=['csv','txt'], on_change=reset_data)
 
 if uploaded_file is not None:
      extype = get_ext(uploaded_file)
