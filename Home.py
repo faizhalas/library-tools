@@ -272,6 +272,16 @@ with mt2:
             st.text("Click the camera icon on the top right menu")
             st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
 
+            st.divider()
+            st.subheader(':blue[Top words]', anchor=False)
+            st.button('Press to download list of top keywords 👈')
+            st.text("Go to 📈 Generate visualization and click Download button.")  
+
+            st.divider()
+            st.subheader(':blue[Burst]', anchor=False)
+            st.button('Press to download the list of detected bursts 👈')
+            st.text("Go to 📈 Generate visualization and click Download button.") 
+
     elif option == 'Scattertext':
         tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
         with tab1:
