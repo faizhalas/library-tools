@@ -24,7 +24,7 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 with st.popover("🔗 Menu"):
-    st.page_link("Home.py", label="Home", icon="🏠")
+    st.page_link("https://www.coconut-libtool.com/", label="Home", icon="🏠")
     st.page_link("pages/1 Scattertext.py", label="Scattertext", icon="1️⃣")
     st.page_link("pages/2 Topic Modeling.py", label="Topic Modeling", icon="2️⃣")
     st.page_link("pages/3 Bidirected Network.py", label="Bidirected Network", icon="3️⃣")
