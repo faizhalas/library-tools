@@ -33,7 +33,7 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 with st.popover("🔗 Menu"):
-    st.page_link("Home.py", label="Home", icon="🏠")
+    st.page_link("https://www.coconut-libtool.com/", label="Home", icon="🏠")
     st.page_link("pages/1 Scattertext.py", label="Scattertext", icon="1️⃣")
     st.page_link("pages/2 Topic Modeling.py", label="Topic Modeling", icon="2️⃣")
     st.page_link("pages/3 Bidirected Network.py", label="Bidirected Network", icon="3️⃣")
@@ -195,6 +195,10 @@ def apply_burst_detection(top_words, data):
         all_freq_data = all_freq_data.cumsum()
                         
     return all_bursts, all_freq_data, num_unique_labels, num_rows
+
+@st.cache_data(ttl=3600)
+def convert_df(df):
+    return df.to_csv().encode("utf-8")
       
 # Streamlit UI for file upload
 uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
@@ -295,6 +299,22 @@ if uploaded_file is not None:
                 )
                 
                 st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+                csv1 = convert_df(freq_data)
+                csv2 = convert_df(bursts)
+
+                e1, e2 = st.columns(2)
+                e1.download_button(
+                     "Press to download list of top keywords 👈",
+                     csv1,
+                     "top-keywords.csv",
+                     "text/csv")
+
+                e2.download_button(
+                     "Press to download the list of detected bursts 👈",
+                     csv2,
+                     "burst.csv",
+                     "text/csv")
     
         with tab2:
             st.markdown('**Kleinberg, J. (2002). Bursty and hierarchical structure in streams. Knowledge Discovery and Data Mining.** https://doi.org/10.1145/775047.775061')
