@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import scattertext as stx
 import pandas as pd
 import re
@@ -41,7 +42,7 @@ st.header("Scattertext", anchor=False)
 st.subheader('Put your file here...', anchor=False)
 
 def reset_all():
-     st.cache_data.clear()
+    st.cache_data.clear()
 
 @st.cache_data(ttl=3600)
 def get_ext(extype):
@@ -117,7 +118,7 @@ def clean_csv(extype):
         
     #===stopword removal===
     stop = stopwords.words('english')
-    paper[ColCho].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
+    paper[ColCho] = paper[ColCho].apply(lambda x: ' '.join([word for word in x.split() if word not in stop]))
           
     #===lemmatize===
     lemmatizer = WordNetLemmatizer()
@@ -125,7 +126,7 @@ def clean_csv(extype):
         words = text.split()
         words = [lemmatizer.lemmatize(word) for word in words]
         return ' '.join(words)
-    paper[ColCho].apply(lemmatize_words)
+    paper[ColCho] = paper[ColCho].apply(lemmatize_words)
     
     words_rmv = [word.strip() for word in words_to_remove.split(";")]
     remove_set = set(words_rmv)
@@ -178,7 +179,7 @@ def running_scattertext(cat_col, catname, noncatname):
         st.toast('Process completed', icon='🎉')
         time.sleep(1)
         st.toast('Visualizing', icon='⏳')
-        st.components.v1.html(html, height = 1200, scrolling = True) 
+        components.html(html, height = 1200, scrolling = True) 
 
     except ValueError:
         st.warning('Please decrease the Minimum term count in the advanced settings.', icon="⚠️")
@@ -191,11 +192,13 @@ def df_w2w(search_terms1, search_terms2):
     for term in search_terms1:
         dfs1 = pd.concat([dfs1, paper[paper[selected_col[0]].str.contains(r'\b' + term + r'\b', case=False, na=False)]], ignore_index=True)
     dfs1['Topic'] = 'First Term'
+    dfs1 = dfs1.drop_duplicates()
         
     dfs2 = pd.DataFrame()
     for term in search_terms2:
         dfs2 = pd.concat([dfs2, paper[paper[selected_col[0]].str.contains(r'\b' + term + r'\b', case=False, na=False)]], ignore_index=True)
     dfs2['Topic'] = 'Second Term'
+    dfs2 = dfs2.drop_duplicates()
     filtered_df = pd.concat([dfs1, dfs2], ignore_index=True)
     
     return dfs1, dfs2, filtered_df
@@ -226,133 +229,138 @@ def df_years(first_range, second_range):
 uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
 
 if uploaded_file is not None:
-    extype = get_ext(uploaded_file)
-
-    if extype.endswith('.csv'):
-         papers = upload(extype) 
-    elif extype.endswith('.txt'):
-         papers = conv_txt(extype)
-
-    df_col, selected_cols = get_data(extype)
-    comparison = check_comparison(extype)
-
-    #Menu
-    c1, c2, c3 = st.columns([4,0.1,4])
-    ColCho = c1.selectbox(
-            'Choose column to analyze',
-            (selected_cols), on_change=reset_all)
-
-    c2.write('')
-
-    compare = c3.selectbox(
-            'Type of comparison',
-            (comparison), on_change=reset_all)
+    try:
+        extype = get_ext(uploaded_file)
     
-    with st.expander("🧮 Show advance settings"):
-        y1, y2 = st.columns([8,2])
-        t1, t2 = st.columns([3,3])
-        words_to_remove = y1.text_input('Input your text', on_change=reset_all, placeholder='Remove specific words. Separate words by semicolons (;)')
-        min_term = y2.number_input("Minimum term count", min_value=0, max_value=10, value=3, step=1, on_change=reset_all)
-        rem_copyright = t1.toggle('Remove copyright statement', value=True, on_change=reset_all)
-        rem_punc = t2.toggle('Remove punctuation', value=False, on_change=reset_all)
-
-    st.info('Scattertext is an expensive process when dealing with a large volume of text with our existing resources. Please kindly wait until the visualization appears.', icon="ℹ️")
+        if extype.endswith('.csv'):
+             papers = upload(extype) 
+        elif extype.endswith('.txt'):
+             papers = conv_txt(extype)
     
-    paper = clean_csv(extype)
-
-    tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
-
-    with tab1:
-         #===visualization===
-        if compare == 'Word-to-word':
-            col1, col2, col3 = st.columns([4,0.1,4])
-            text1 = col1.text_input('First Term', on_change=reset_all, placeholder='put comma if you have more than one')
-            search_terms1 = [term.strip() for term in text1.split(",") if term.strip()]
-            col2.write('')
-            text2 = col3.text_input('Second Term', on_change=reset_all, placeholder='put comma if you have more than one')
-            search_terms2 = [term.strip() for term in text2.split(",") if term.strip()]
-            
-            dfs1, dfs2, filtered_df = df_w2w(search_terms1, search_terms2)
+        df_col, selected_cols = get_data(extype)
+        comparison = check_comparison(extype)
     
-            if dfs1.empty and dfs2.empty:
-                st.warning('We cannot find anything in your document.', icon="⚠️")
-            elif dfs1.empty:
-                st.warning(f'We cannot find {text1} in your document.', icon="⚠️")
-            elif dfs2.empty:
-                st.warning(f'We cannot find {text2} in your document.', icon="⚠️")
-            else:
-                with st.spinner('Processing. Please wait until the visualization comes up'):
-                    running_scattertext('Topic', 'First Term', 'Second Term')
+        #Menu
+        c1, c2, c3 = st.columns([4,0.1,4])
+        ColCho = c1.selectbox(
+                'Choose column to analyze',
+                (selected_cols), on_change=reset_all)
     
-        elif compare == 'Manual label':
-            col1, col2, col3 = st.columns(3)
+        c2.write('')
     
-            df_col_sel = sorted([col for col in paper.columns.tolist()])
-                 
-            column_selected = col1.selectbox(
-                'Choose column',
-                (df_col_sel), on_change=reset_all)
+        compare = c3.selectbox(
+                'Type of comparison',
+                (comparison), on_change=reset_all)
+        
+        with st.expander("🧮 Show advance settings"):
+            y1, y2 = st.columns([8,2])
+            t1, t2 = st.columns([3,3])
+            words_to_remove = y1.text_input('Input your text', on_change=reset_all, placeholder='Remove specific words. Separate words by semicolons (;)')
+            min_term = y2.number_input("Minimum term count", min_value=0, max_value=10, value=3, step=1, on_change=reset_all)
+            rem_copyright = t1.toggle('Remove copyright statement', value=True, on_change=reset_all)
+            rem_punc = t2.toggle('Remove punctuation', value=False, on_change=reset_all)
     
-            list_words = paper[column_selected].values.tolist()
-            list_unique = sorted(list(set(list_words)))
-            
-            if column_selected is not None:
-                label1 = col2.selectbox(
-                    'Choose first label',
-                    (list_unique), on_change=reset_all)
+        st.info('Scattertext is an expensive process when dealing with a large volume of text with our existing resources. Please kindly wait until the visualization appears.', icon="ℹ️")
+        
+        paper = clean_csv(extype)
     
-                default_index = 0 if len(list_unique) == 1 else 1
-                label2 = col3.selectbox(
-                    'Choose second label',
-                    (list_unique), on_change=reset_all, index=default_index)
+        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
     
-            filtered_df = paper[paper[column_selected].isin([label1, label2])].reset_index(drop=True)
-            
-            with st.spinner('Processing. Please wait until the visualization comes up'):
-                running_scattertext(column_selected, label1, label2)
-    
-        elif compare == 'Sources':
-            col1, col2, col3 = st.columns([4,0.1,4])
-    
-            unique_stitle = set()
-            unique_stitle.update(paper['Source title'].dropna())
-            list_stitle = sorted(list(unique_stitle))
-                 
-            stitle1 = col1.selectbox(
-                'Choose first label',
-                (list_stitle), on_change=reset_all)
-            col2.write('')
-            default_index = 0 if len(list_stitle) == 1 else 1
-            stitle2 = col3.selectbox(
-                'Choose second label',
-                (list_stitle), on_change=reset_all, index=default_index)
-    
-            filtered_df = df_sources(stitle1, stitle2)
-    
-            with st.spinner('Processing. Please wait until the visualization comes up'):
-                running_scattertext('Source title', stitle1, stitle2)
-    
-        elif compare == 'Years':
-            col1, col2, col3 = st.columns([4,0.1,4])
-            
-            MIN, MAX, GAP, MID = get_minmax(extype)
-            if (GAP != 0):
-                first_range = col1.slider('First Range', min_value=MIN, max_value=MAX, value=(MIN, MID), on_change=reset_all)
+        with tab1:
+             #===visualization===
+            if compare == 'Word-to-word':
+                col1, col2, col3 = st.columns([4,0.1,4])
+                text1 = col1.text_input('First Term', on_change=reset_all, placeholder='put comma if you have more than one')
+                search_terms1 = [term.strip() for term in text1.split(",") if term.strip()]
                 col2.write('')
-                second_range = col3.slider('Second Range', min_value=MIN, max_value=MAX, value=(MID, MAX), on_change=reset_all)
-            
-                filtered_df = df_years(first_range, second_range)
-    
+                text2 = col3.text_input('Second Term', on_change=reset_all, placeholder='put comma if you have more than one')
+                search_terms2 = [term.strip() for term in text2.split(",") if term.strip()]
+                
+                dfs1, dfs2, filtered_df = df_w2w(search_terms1, search_terms2)
+        
+                if dfs1.empty and dfs2.empty:
+                    st.warning('We cannot find anything in your document.', icon="⚠️")
+                elif dfs1.empty:
+                    st.warning(f'We cannot find {text1} in your document.', icon="⚠️")
+                elif dfs2.empty:
+                    st.warning(f'We cannot find {text2} in your document.', icon="⚠️")
+                else:
+                    with st.spinner('Processing. Please wait until the visualization comes up'):
+                        running_scattertext('Topic', 'First Term', 'Second Term')
+        
+            elif compare == 'Manual label':
+                col1, col2, col3 = st.columns(3)
+        
+                df_col_sel = sorted([col for col in paper.columns.tolist()])
+                     
+                column_selected = col1.selectbox(
+                    'Choose column',
+                    (df_col_sel), on_change=reset_all)
+        
+                list_words = paper[column_selected].values.tolist()
+                list_unique = sorted(list(set(list_words)))
+                
+                if column_selected is not None:
+                    label1 = col2.selectbox(
+                        'Choose first label',
+                        (list_unique), on_change=reset_all)
+        
+                    default_index = 0 if len(list_unique) == 1 else 1
+                    label2 = col3.selectbox(
+                        'Choose second label',
+                        (list_unique), on_change=reset_all, index=default_index)
+        
+                filtered_df = paper[paper[column_selected].isin([label1, label2])].reset_index(drop=True)
+                
                 with st.spinner('Processing. Please wait until the visualization comes up'):
-                    running_scattertext('Topic Range', 'First range', 'Second range')
+                    running_scattertext(column_selected, label1, label2)
+        
+            elif compare == 'Sources':
+                col1, col2, col3 = st.columns([4,0.1,4])
+        
+                unique_stitle = set()
+                unique_stitle.update(paper['Source title'].dropna())
+                list_stitle = sorted(list(unique_stitle))
+                     
+                stitle1 = col1.selectbox(
+                    'Choose first label',
+                    (list_stitle), on_change=reset_all)
+                col2.write('')
+                default_index = 0 if len(list_stitle) == 1 else 1
+                stitle2 = col3.selectbox(
+                    'Choose second label',
+                    (list_stitle), on_change=reset_all, index=default_index)
+        
+                filtered_df = df_sources(stitle1, stitle2)
+        
+                with st.spinner('Processing. Please wait until the visualization comes up'):
+                    running_scattertext('Source title', stitle1, stitle2)
+        
+            elif compare == 'Years':
+                col1, col2, col3 = st.columns([4,0.1,4])
+                
+                MIN, MAX, GAP, MID = get_minmax(extype)
+                if (GAP != 0):
+                    first_range = col1.slider('First Range', min_value=MIN, max_value=MAX, value=(MIN, MID), on_change=reset_all)
+                    col2.write('')
+                    second_range = col3.slider('Second Range', min_value=MIN, max_value=MAX, value=(MID, MAX), on_change=reset_all)
+                
+                    filtered_df = df_years(first_range, second_range)
+        
+                    with st.spinner('Processing. Please wait until the visualization comes up'):
+                        running_scattertext('Topic Range', 'First range', 'Second range')
+    
+                else:
+                    st.write('You only have data in ', (MAX))
+    
+        with tab2:
+            st.markdown('**Jason Kessler. 2017. Scattertext: a Browser-Based Tool for Visualizing how Corpora Differ. In Proceedings of ACL 2017, System Demonstrations, pages 85–90, Vancouver, Canada. Association for Computational Linguistics.** https://doi.org/10.48550/arXiv.1703.00565')
+    
+        with tab3:
+            st.markdown('**Marrone, M., & Linnenluecke, M.K. (2020). Interdisciplinary Research Maps: A new technique for visualizing research topics. PLoS ONE, 15.** https://doi.org/10.1371/journal.pone.0242283')
+            st.markdown('**Moreno, A., & Iglesias, C.A. (2021). Understanding Customers’ Transport Services with Topic Clustering and Sentiment Analysis. Applied Sciences.** https://doi.org/10.3390/app112110169')
+            st.markdown('**Sánchez-Franco, M.J., & Rey-Tienda, S. (2023). The role of user-generated content in tourism decision-making: an exemplary study of Andalusia, Spain. Management Decision.** https://doi.org/10.1108/MD-06-2023-0966')
 
-            else:
-                st.write('You only have data in ', (MAX))
-
-    with tab2:
-        st.markdown('**Kessler, J.S. (2017). Scattertext: a Browser-Based Tool for Visualizing how Corpora Differ.** https://doi.org/10.48550/arXiv.1703.00565')
-
-    with tab3:
-        st.markdown('**Marrone, M., & Linnenluecke, M.K. (2020). Interdisciplinary Research Maps: A new technique for visualizing research topics. PLoS ONE, 15.** https://doi.org/10.1371/journal.pone.0242283')
-        st.markdown('**Moreno, A., & Iglesias, C.A. (2021). Understanding Customers’ Transport Services with Topic Clustering and Sentiment Analysis. Applied Sciences.** https://doi.org/10.3390/app112110169')
-        st.markdown('**Sánchez-Franco, M.J., & Rey-Tienda, S. (2023). The role of user-generated content in tourism decision-making: an exemplary study of Andalusia, Spain. Management Decision.** https://doi.org/10.1108/MD-06-2023-0966')
+    except:
+        st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
+        st.stop()
