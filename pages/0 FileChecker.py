@@ -101,7 +101,7 @@ if uploaded_file is not None:
         coldf = sorted(data.select_dtypes(include=['object']).columns.tolist())
         container3 = st.container(border=True)
                 
-        if not coldf:
+        if not coldf or data.shape[0] < 2:
             container3.subheader('❌ Topic Modeling', divider='red', anchor=False)
             container3.write("Unfortunately, you don't have a column containing object in your data. Please check again.")
         else:
@@ -129,11 +129,9 @@ if uploaded_file is not None:
 
         #===scattertext===
         container6 = st.container(border=True)   
-        if not coldf:
+        if not coldf or data.shape[0] < 2:
             container6.subheader('❌ Scattertext', divider='red', anchor=False)
             container6.write("Unfortunately, you don't have a column containing object in your data. Please check again.")
         else:
             container6.subheader('✔️ Scattertext', divider='blue', anchor=False)
             container6.write('Congratulations! You can use Scattertext')
-
-        
