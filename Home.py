@@ -245,7 +245,7 @@ with mt2:
         with tab2:
             st.text("1. Put your file. Choose your preferred column to analyze.")
             st.text("2. Choose your preferred method to count the words and decide how many top words you want to include or remove.")
-            st.text("3. To adjust the visualization, you can change the number of columns.")
+            st.text("3. Choose your preferred visualization: line graph or square scatter plot.")
             st.text("4. Finally, you can visualize your data.")
             st.error("This app includes lemmatization and stopwords. Currently, we only offer English words.", icon="💬")
             
@@ -269,18 +269,18 @@ with mt2:
             
         with tab4:
             st.subheader(':blue[Burst Detection]', anchor=False)
-            st.text("Click the camera icon on the top right menu")
-            st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
+            st.button('📊 Download high resolution image')
+            st.text("Click download button.") 
 
             st.divider()
             st.subheader(':blue[Top words]', anchor=False)
-            st.button('Press to download list of top keywords 👈')
-            st.text("Go to 📈 Generate visualization and click Download button.")  
+            st.button('👉 Press to download list of top words')
+            st.text("Click download button.")  
 
             st.divider()
             st.subheader(':blue[Burst]', anchor=False)
-            st.button('Press to download the list of detected bursts 👈')
-            st.text("Go to 📈 Generate visualization and click Download button.") 
+            st.button('👉 Press to download the list of detected bursts')
+            st.text("Click download button.") 
 
     elif option == 'Scattertext':
         tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
