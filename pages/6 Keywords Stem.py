@@ -185,7 +185,7 @@ if uploaded_file is not None:
                 st.download_button(
                     "Press to download result 👈",
                     csv,
-                    "scopus.csv",
+                    "result.csv",
                     "text/csv")
       
             elif extype.endswith('.txt'):
@@ -194,7 +194,7 @@ if uploaded_file is not None:
                 st.download_button(
                     "Press to download result 👈",
                     txt,
-                    "savedrecs.txt",
+                    "result.txt",
                     "text/csv")    
              
         with tab2:
