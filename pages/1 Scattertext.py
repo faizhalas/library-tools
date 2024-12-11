@@ -109,7 +109,7 @@ def clean_csv(extype):
     paper = papers.dropna(subset=[ColCho])
                  
     #===mapping===
-    paper[ColCho].map(lambda x: x.lower())
+    paper[ColCho] = paper[ColCho].map(lambda x: x.lower())
     if rem_punc:
         paper[ColCho] = paper[ColCho].map(lambda x: re.sub('[,:;\.!-?•=]', ' ', x))
         paper[ColCho] = paper[ColCho].str.replace('\u201c|\u201d', '', regex=True) 
