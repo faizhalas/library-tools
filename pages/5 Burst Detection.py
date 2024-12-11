@@ -135,7 +135,10 @@ def clean_data(df):
     df['processed'] = df.apply(lambda row: preprocess_text(f"{row.get(col_name, '')}"), axis=1)
     
     # Vectorize processed text
-    vectorizer = CountVectorizer(lowercase=False, tokenizer=lambda x: x.split())
+    if count_method == "Document Frequency":
+        vectorizer = CountVectorizer(lowercase=False, tokenizer=lambda x: x.split(), binary=True)
+    else:
+        vectorizer = CountVectorizer(lowercase=False, tokenizer=lambda x: x.split())
     X = vectorizer.fit_transform(df['processed'].tolist())
     
     # Create DataFrame from the Document-Term Matrix (DTM)
@@ -350,14 +353,16 @@ uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
-        c1, c2, c3 = st.columns([3,3.5,3.5])
+        c1, c2, c3, c4 = st.columns([2,2,3,3])
         top_n = c1.number_input("Number of top words to analyze", min_value=5, value=10, step=1, on_change=reset_all)
         viz_selected = c2.selectbox("Option for visualization",
             ("Line graph", "Scatter plot"), on_change=reset_all)
-        running_total = c3.selectbox("Option for counting words",
+        running_total = c3.selectbox("Calculation method",
             ("Running total", "By occurrences each year"), on_change=reset_all)
+        count_method = c4.selectbox("Count by",
+            ("Term Frequency", "Document Frequency"), on_change=reset_all)
 
-        d1, d2 = st.columns([3,7])
+        d1, d2 = st.columns([2,8])
         df, coldf, MIN, MAX, GAP = load_data(uploaded_file)
         col_name = d1.selectbox("Select column to analyze",
             (coldf), on_change=reset_all)
