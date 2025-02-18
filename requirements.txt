@@ -15,7 +15,7 @@ setuptools
 streamlit-agraph
 umap-learn
 wordcloud
-mlxtend
+mlxtend==0.23.1
 bertopic
 ipywidgets==7.6.6
 bitermplus
