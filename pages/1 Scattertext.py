@@ -11,8 +11,6 @@ from nltk.corpus import stopwords
 import time
 import sys
 from tools import sourceformat as sf
-import tarfile
-from io import BytesIO, StringIO
 
 #===config===
 st.set_page_config(
