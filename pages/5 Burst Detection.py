@@ -91,9 +91,12 @@ def conv_txt(extype):
     else:
         col_dict = {'TI': 'Title',
                 'SO': 'Source title',
+                'DE': 'Author Keywords',
                 'DT': 'Document Type',
                 'AB': 'Abstract',
-                'PY': 'Year'}
+                'TC': 'Cited by',
+                'PY': 'Year',
+                'ID': 'Keywords Plus'}
         papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
         papers.rename(columns=col_dict, inplace=True)
     print(papers)
