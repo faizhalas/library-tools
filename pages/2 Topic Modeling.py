@@ -36,7 +36,7 @@ from html2image import Html2Image
 from umap import UMAP
 import os
 import time
-
+from tools import sourceformat as sf
 
 #===config===
 st.set_page_config(
@@ -103,22 +103,54 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 @st.cache_data(ttl=3600)
 def upload(file):
     papers = pd.read_csv(uploaded_file)
+    if "dimensions" in uploaded_file.name.lower():
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
     return papers
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    col_dict = {'TI': 'Title',
-            'SO': 'Source title',
-            'DT': 'Document Type',
-            'AB': 'Abstract',
-            'PY': 'Year'}
-    papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-    papers.rename(columns=col_dict, inplace=True)
+    if "pmc" in uploaded_file.name.lower():
+        file = uploaded_file
+        papers = sf.medline(file)
+    else:
+        col_dict = {'TI': 'Title',
+                'SO': 'Source title',
+                'DT': 'Document Type',
+                'AB': 'Abstract',
+                'PY': 'Year'}
+        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
+        papers.rename(columns=col_dict, inplace=True)
+    print(papers)
     return papers
 
 
+@st.cache_data(ttl=3600)
+def conv_json(extype):
+    col_dict={'title': 'title',
+    'rights_date_used': 'Year',
+    }
+    keywords = pd.read_json(uploaded_file)
+    keywords = sf.htrc(keywords)
+    keywords.rename(columns=col_dict,inplace=True)
+    return keywords
+
+def conv_pub(extype):
+    if (get_ext(extype)).endswith('.tar.gz'):
+        bytedata = extype.read()
+        keywords = sf.readPub(bytedata)
+    elif (get_ext(extype)).endswith('.xml'):
+        bytedata = extype.read()
+        keywords = sf.readxml(bytedata)
+    return keywords
+
 #===Read data===
-uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt','json','tar.gz','xml'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
@@ -128,7 +160,12 @@ if uploaded_file is not None:
              papers = upload(extype) 
         elif extype.endswith('.txt'):
              papers = conv_txt(extype)
-    
+
+        elif extype.endswith('.json'):
+            papers = conv_json(extype)
+        elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
+            papers = conv_pub(uploaded_file)
+
         coldf = sorted(papers.select_dtypes(include=['object']).columns.tolist())
             
         c1, c2 = st.columns([3,4])
@@ -213,7 +250,7 @@ if uploaded_file is not None:
             st.write('')
     
         elif method == 'pyLDA':       
-            tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
     
             with tab1:
             #===visualization===
@@ -229,21 +266,21 @@ if uploaded_file is not None:
                                 random_state=py_random_state,
                                 chunksize=py_chunksize,
                                 alpha='auto',
-                                per_word_topics=True)
-         
+                                per_word_topics=False)
                     pprint(lda_model.print_topics())
                     doc_lda = lda_model[corpus]
-         
+                    topics = lda_model.show_topics(num_words = 30,formatted=False)
+
                     #===visualization===
                     coherence_model_lda = CoherenceModel(model=lda_model, texts=topic_abs_LDA, dictionary=id2word, coherence='c_v')
                     coherence_lda = coherence_model_lda.get_coherence()
                     vis = pyLDAvis.gensim_models.prepare(lda_model, corpus, id2word)
                     py_lda_vis_html = pyLDAvis.prepared_data_to_html(vis)
-                    return py_lda_vis_html, coherence_lda, vis
+                    return py_lda_vis_html, coherence_lda, vis, topics
                        
                 with st.spinner('Performing computations. Please wait ...'):
                     try:
-                        py_lda_vis_html, coherence_lda, vis = pylda(extype)
+                        py_lda_vis_html, coherence_lda, vis, topics = pylda(extype)
                         st.write('Coherence score: ', coherence_lda)
                         components.html(py_lda_vis_html, width=1500, height=800)
                         st.markdown('Copyright (c) 2015, Ben Mabey. https://github.com/bmabey/pyLDAvis')
@@ -253,13 +290,14 @@ if uploaded_file is not None:
                             pyLDAvis.save_html(vis, 'output.html')
                             hti = Html2Image()
                             hti.browser.flags = ['--default-background-color=ffffff', '--hide-scrollbars']
+                            hti.browser.use_new_headless = None
                             css = "body {background: white;}"
-                            hti.screenshot(
+                            hti.screenshot( 
                                 other_file='output.html', css_str=css, size=(1500, 800),
                                 save_as='ldavis_img.png'
                             )
-                                 
-                        img_lda(vis)   
+
+                        img_lda(vis)
                         with open("ldavis_img.png", "rb") as file:
                             btn = st.download_button(
                                 label="Download image",
@@ -267,7 +305,21 @@ if uploaded_file is not None:
                                 file_name="ldavis_img.png",
                                 mime="image/png"
                                 )
-                           
+                        
+                        #===download results===#
+                        resultf = pd.DataFrame(topics)
+                        #formatting
+                        resultf = resultf.transpose()
+                        resultf = resultf.drop([0])
+                        resultf = resultf.explode(list(range(len(resultf.columns))), ignore_index=False)
+                        
+                        resultcsv = resultf.to_csv().encode("utf-8")
+                        st.download_button(
+                            label = "Download Results",
+                            data=resultcsv,
+                            file_name="results.csv",
+                            mime="text\csv")
+
                     except NameError:
                         st.warning('🖱️ Please click Submit')
     
@@ -280,6 +332,14 @@ if uploaded_file is not None:
                 st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Topic Modeling. Text Mining for Information Professionals, 105–137.** https://doi.org/10.1007/978-3-030-85085-2_4')
                 st.markdown('**Lamba, M., & Madhusudhan, M. (2019, June 7). Mapping of topics in DESIDOC Journal of Library and Information Technology, India: a study. Scientometrics, 120(2), 477–505.** https://doi.org/10.1007/s11192-019-03137-5')
          
+            with tab4:
+                st.subheader(':blue[pyLDA]', anchor=False)
+                st.button('Download image')
+                st.text("Click Download Image button.")
+                st.subheader("Downloading CSV results")
+                st.button("Download Results")
+                st.text("Click Download results button at bottom of page")
+
          #===Biterm===
         elif method == 'Biterm':            
                  
@@ -299,13 +359,14 @@ if uploaded_file is not None:
                 topics_coords = tmp.prepare_coords(model)
                 totaltop = topics_coords.label.values.tolist()
                 perplexity = model.perplexity_
-                return topics_coords, phi, totaltop, perplexity
+                top_topics = model.df_words_topics_
+                return topics_coords, phi, totaltop, perplexity, top_topics
     
-            tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
             with tab1:
                 try:
                     with st.spinner('Performing computations. Please wait ...'): 
-                        topics_coords, phi, totaltop, perplexity = biterm_topic(extype)            
+                        topics_coords, phi, totaltop, perplexity, top_topics = biterm_topic(extype)            
                         col1, col2 = st.columns([4,6])
                       
                         @st.cache_data(ttl=3600)
@@ -331,6 +392,14 @@ if uploaded_file is not None:
                             btmvis_probs = biterm_bar(extype)
                             st.altair_chart(btmvis_probs, use_container_width=True)
     
+                        #===download results===#
+                        resultcsv = top_topics.to_csv().encode("utf-8")
+                        st.download_button(
+                        label = "Download Results",
+                        data=resultcsv,
+                        file_name="results.csv",
+                         mime="text\csv")
+
                 except ValueError:
                     st.error('🙇‍♂️ Please raise the number of topics and click submit')
                 except NameError:
@@ -343,7 +412,15 @@ if uploaded_file is not None:
                 st.markdown('**Chen, Y., Dong, T., Ban, Q., & Li, Y. (2021). What Concerns Consumers about Hypertension? A Comparison between the Online Health Community and the Q&A Forum. International Journal of Computational Intelligence Systems, 14(1), 734.** https://doi.org/10.2991/ijcis.d.210203.002')
                 st.markdown('**George, Crissandra J., "AMBIGUOUS APPALACHIANNESS: A LINGUISTIC AND PERCEPTUAL INVESTIGATION INTO ARC-LABELED PENNSYLVANIA COUNTIES" (2022). Theses and Dissertations-- Linguistics. 48.** https://doi.org/10.13023/etd.2022.217')
                 st.markdown('**Li, J., Chen, W. H., Xu, Q., Shah, N., Kohler, J. C., & Mackey, T. K. (2020). Detection of self-reported experiences with corruption on twitter using unsupervised machine learning. Social Sciences & Humanities Open, 2(1), 100060.** https://doi.org/10.1016/j.ssaho.2020.100060')
-              
+            with tab4:
+                st.subheader(':blue[Biterm]', anchor=False)
+                st.text("Click the three dots at the top right then select the desired format.")
+                st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_biterm.jpg)")          
+                st.subheader("Downloading CSV Results")
+                st.button("Download Results")
+                st.text("Click Download results button at bottom of page")
+
+
          #===BERTopic===
         elif method == 'BERTopic':
             @st.cache_data(ttl=3600, show_spinner=False)
@@ -390,7 +467,7 @@ if uploaded_file is not None:
                 fig5 = topic_model.visualize_barchart(top_n_topics=num_topic)
                 return fig5
            
-            tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
             with tab1:
                 try:
                     with st.spinner('Performing computations. Please wait ...'):
@@ -426,7 +503,17 @@ if uploaded_file is not None:
                             st.write(fig3)
                         with st.expander("Visualize Topic Similarity"):
                             st.write(fig4)
-                                            
+                      
+                        #===download results===#
+                        results = topic_model.get_topic_info()
+                        resultf = pd.DataFrame(results)
+                        resultcsv = resultf.to_csv().encode("utf-8")
+                        st.download_button(
+                        label = "Download Results",
+                        data=resultcsv,
+                        file_name="results.csv",
+                        mime="text\csv")
+
                 except ValueError:
                     st.error('🙇‍♂️ Please raise the number of topics and click submit')
               
@@ -439,6 +526,15 @@ if uploaded_file is not None:
             with tab3:
                 st.markdown('**Jeet Rawat, A., Ghildiyal, S., & Dixit, A. K. (2022, December 1). Topic modelling of legal documents using NLP and bidirectional encoder representations from transformers. Indonesian Journal of Electrical Engineering and Computer Science, 28(3), 1749.** https://doi.org/10.11591/ijeecs.v28.i3.pp1749-1755')
                 st.markdown('**Yao, L. F., Ferawati, K., Liew, K., Wakamiya, S., & Aramaki, E. (2023, April 20). Disruptions in the Cystic Fibrosis Community’s Experiences and Concerns During the COVID-19 Pandemic: Topic Modeling and Time Series Analysis of Reddit Comments. Journal of Medical Internet Research, 25, e45249.** https://doi.org/10.2196/45249')
+
+            with tab4:
+                st.divider()
+                st.subheader(':blue[BERTopic]', anchor=False)
+                st.text("Click the camera icon on the top right menu")
+                st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
+                st.subheader("Downloading CSV Results")
+                st.button("Download Results")
+                st.text("Click Download results button at bottom of page")
 
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")

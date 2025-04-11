@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 import sys
-
+from tools import sourceformat as sf
 #===config===
 st.set_page_config(
     page_title="Coconut",
@@ -60,6 +60,15 @@ def upload(extype):
     if 'Publication Year' in df.columns:
                df.rename(columns={'Publication Year': 'Year', 'Citing Works Count': 'Cited by',
                                      'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
+    if "dimensions" in uploaded_file.name.lower():
+        df = sf.dim(df)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        df.rename(columns=col_dict, inplace=True)
+    
     return df
 
 @st.cache_data(ttl=3600)
@@ -76,14 +85,39 @@ def get_minmax(df):
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    col_dict = {'TI': 'Title',
-            'SO': 'Source title',
-            'DT': 'Document Type',
-            'AB': 'Abstract',
-            'PY': 'Year'}
-    df = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-    df.rename(columns=col_dict, inplace=True)
-    return df
+    if "pmc" in uploaded_file.name.lower():
+        file = uploaded_file
+        papers = sf.medline(file)
+    else:
+        col_dict = {'TI': 'Title',
+                'SO': 'Source title',
+                'DT': 'Document Type',
+                'AB': 'Abstract',
+                'PY': 'Year'}
+        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
+        papers.rename(columns=col_dict, inplace=True)
+    print(papers)
+    return papers
+
+
+
+def conv_json(extype):
+    col_dict={'title': 'title',
+    'rights_date_used': 'Year',
+    }
+    keywords = pd.read_json(uploaded_file)
+    keywords = sf.htrc(keywords)
+    keywords.rename(columns=col_dict,inplace=True)
+    return keywords
+
+def conv_pub(extype):
+    if (get_ext(extype)).endswith('.tar.gz'):
+        bytedata = extype.read()
+        keywords = sf.readPub(bytedata)
+    elif (get_ext(extype)).endswith('.xml'):
+        bytedata = extype.read()
+        keywords = sf.readxml(bytedata)
+    return keywords
 
 # Helper Functions
 @st.cache_data(ttl=3600)
@@ -107,6 +141,10 @@ def load_data(uploaded_file):
          df = upload(extype) 
     elif extype.endswith('.txt'):
          df = conv_txt(extype)
+    elif extype.endswith('.json'):
+        df = conv_json(extype)
+    elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
+        df = conv_pub(uploaded_file)
 
     df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
     df = df.dropna(subset=['Year'])
@@ -349,7 +387,7 @@ def download_result(freq_data, bursts):
     csv2 = convert_df(bursts)
     return csv1, csv2
       
-uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt','json','tar.gz','xml'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
@@ -371,14 +409,14 @@ if uploaded_file is not None:
         if (GAP != 0):
             YEAR = st.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_all)
         else:
-            e1.write('You only have data in ', (MAX))
+            c1.write('You only have data in ', (MAX))
             sys.exit(1)
       
         yearly_term_frequency, top_words = clean_data(df) 
         
         bursts, freq_data, num_unique_labels, num_rows = apply_burst_detection(top_words, yearly_term_frequency)
 
-        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
 
         with tab1:        
             if bursts.empty:
@@ -424,7 +462,11 @@ if uploaded_file is not None:
             st.markdown('**Li, M., Zheng, Z., & Yi, Q. (2024). The landscape of hot topics and research frontiers in Kawasaki disease: scientometric analysis. Heliyon, 10(8), e29680–e29680.** https://doi.org/10.1016/j.heliyon.2024.e29680')
             st.markdown('**Domicián Máté, Ni Made Estiyanti and Novotny, A. (2024) ‘How to support innovative small firms? Bibliometric analysis and visualization of start-up incubation’, Journal of Innovation and Entrepreneurship, 13(1).** https://doi.org/10.1186/s13731-024-00361-z')
             st.markdown('**Lamba, M., Madhusudhan, M. (2022). Burst Detection. In: Text Mining for Information Professionals. Springer, Cham.** https://doi.org/10.1007/978-3-030-85085-2_6')
+        
+        with tab4:
+            st.text("Download results/images buttons located below visualizations")
             
+
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
