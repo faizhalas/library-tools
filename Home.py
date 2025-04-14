@@ -28,8 +28,6 @@ mt1, mt2 = st.tabs(["Menu", "How to"])
 
 with mt1:   
 
-
-
     st.header("Visualizations",divider=True)
 
     col1, col2, col3 = st.columns(3)
@@ -55,25 +53,25 @@ with mt1:
 
     col21,col22, col23, col24 = st.columns(4)
 
-with col21.container(border=True):
+    with col21.container(border=True):
         st.markdown("![Topic modeling](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/topicmodeling.png)")
         if st.button("Go to Topic Modeling"):
             st.switch_page("pages/2 Topic Modeling.py")
-
-with col22.container(border=True):
-    st.markdown("![Burst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/burst.png)")
-    if st.button("Go to Burst Detection"):
-        st.switch_page("pages/5 Burst Detection.py")
-
-with col23.container(border=True):
+    
+    with col22.container(border=True):
+        st.markdown("![Burst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/burst.png)")
+        if st.button("Go to Burst Detection"):
+            st.switch_page("pages/5 Burst Detection.py")
+    
+    with col23.container(border=True):
         st.markdown("![Stemming](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/lemma.png)")
         if st.button("Go to Keywords Stem"):
             st.switch_page("pages/6 Keywords Stem.py")     
-
-with col24.container(border=True):
-    st.image("images/sentiment.png")
-    if st.button("Go to Sentiment Analysis"):
-        st.switch_page("pages/7 SentimentAnalysis.py")
+    
+    with col24.container(border=True):
+        st.markdown("![Sentiment](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentiment.png)")
+        if st.button("Go to Sentiment Analysis"):
+            st.switch_page("pages/7 SentimentAnalysis.py")
             
 with mt2:
     st.header("Before you start", anchor=False)
