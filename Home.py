@@ -25,38 +25,56 @@ st.title('🥥 Coconut Libtool', anchor=False)
 #===page===
 mt1, mt2 = st.tabs(["Menu", "How to"])
 
+
 with mt1:   
+
+
+
+    st.header("Visualizations",divider=True)
+
     col1, col2, col3 = st.columns(3)
     with col1.container(border=True):
-        st.markdown("![Stemming](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/lemma.png)")
-        if st.button("Go to Keywords Stem"):
-            st.switch_page("pages/6 Keywords Stem.py")
-        
+        st.markdown("![Scattertext](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/scattertext.png)")
+        if st.button("Go to Scattertext"):
+            st.switch_page("pages/1 Scattertext.py")     
+
+
     with col2.container(border=True):
-        st.markdown("![Topic modeling](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/topicmodeling.png)")
-        if st.button("Go to Topic Modeling"):
-            st.switch_page("pages/2 Topic Modeling.py")
+        st.markdown("![Sunburst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sunburst.png)")
+        if st.button("Go to Sunburst Visualization"):
+            st.switch_page("pages/4 Sunburst.py")
+
 
     with col3.container(border=True):
         st.markdown("![Bidirected network](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/bidirected.png)")
         if st.button("Go to Bidirected Network"):
             st.switch_page("pages/3 Bidirected Network.py")
 
-    with col1.container(border=True):
-        st.markdown("![Sunburst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sunburst.png)")
-        if st.button("Go to Sunburst Visualization"):
-            st.switch_page("pages/4 Sunburst.py")
 
-    with col2.container(border=True):
-        st.markdown("![Burst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/burst.png)")
-        if st.button("Go to Burst Detection"):
-            st.switch_page("pages/5 Burst Detection.py")
+    st.header("Analysis",divider=True)
 
-    with col3.container(border=True):
-        st.markdown("![Scattertext](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/scattertext.png)")
-        if st.button("Go to Scattertext"):
-            st.switch_page("pages/1 Scattertext.py")          
-         
+    col21,col22, col23, col24 = st.columns(4)
+
+with col21.container(border=True):
+        st.markdown("![Topic modeling](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/topicmodeling.png)")
+        if st.button("Go to Topic Modeling"):
+            st.switch_page("pages/2 Topic Modeling.py")
+
+with col22.container(border=True):
+    st.markdown("![Burst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/burst.png)")
+    if st.button("Go to Burst Detection"):
+        st.switch_page("pages/5 Burst Detection.py")
+
+with col23.container(border=True):
+        st.markdown("![Stemming](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/lemma.png)")
+        if st.button("Go to Keywords Stem"):
+            st.switch_page("pages/6 Keywords Stem.py")     
+
+with col24.container(border=True):
+    st.image("images/sentiment.png")
+    if st.button("Go to Sentiment Analysis"):
+        st.switch_page("pages/7 SentimentAnalysis.py")
+            
 with mt2:
     st.header("Before you start", anchor=False)
     option = st.selectbox(
@@ -94,8 +112,13 @@ with mt2:
             | Lens.org       | Comma-separated values | Keywords (Scholarly Works)      |
             |                | (.csv)                 |                                 |
             +----------------+------------------------+---------------------------------+
+            | Dimensions     | Comma-separated values | MeSH terms                      |
+            |                | (.csv)                 |                                 |
+            +----------------+------------------------+---------------------------------+
             | Other          | .csv                   | Change your column to 'Keyword' |
             +----------------+------------------------+---------------------------------+
+            | Hathitrust     | .json                  | htid (Hathitrust ID)            |
+            +----------------+------------------------+---------------------------------+           
             """)
 
         with tab4:  
@@ -137,6 +160,8 @@ with mt2:
             |                | (.csv)                 |                                  |
             +----------------+------------------------|                                  |
             | Other          | .csv                   |                                  |
+            +----------------+------------------------|                                  |
+            | Hathitrust     | .json                  |                                  |
             +----------------+------------------------+----------------------------------+
             """)
 
@@ -188,8 +213,13 @@ with mt2:
             | Lens.org       | Comma-separated values | Keywords (Scholarly Works)      |
             |                | (.csv)                 |                                 |
             +----------------+------------------------+---------------------------------+
+            | Dimensions     | Comma-separated values | MeSH terms                      |
+            |                | (.csv)                 |                                 |
+            +----------------+------------------------+---------------------------------+
             | Other          | .csv                   | Change your column to 'Keyword' |
             |                |                        | and separate the words with ';' |
+            +----------------+------------------------+---------------------------------+
+            | Hathitrust     | .json                  | htid (Hathitrust ID)            |
             +----------------+------------------------+---------------------------------+
             """)    
 
@@ -226,6 +256,8 @@ with mt2:
             |                | (.csv)                 | Publication Type,  | 
             |                |                        | Source Title,      |
             |                |                        | Citing Works Count |
+            +----------------+------------------------+--------------------+
+            | Hathitrust     | .json                  | htid(Hathitrust ID)|
             +----------------+------------------------+--------------------+
             """)          
 
@@ -264,6 +296,8 @@ with mt2:
             |                | (.csv)                 |                                  |
             +----------------+------------------------|                                  |
             | Other          | .csv                   |                                  |
+            +----------------+------------------------|                                  |
+            | Hathitrust     | .json                  |                                  |
             +----------------+------------------------+----------------------------------+
             """)
             
@@ -311,6 +345,8 @@ with mt2:
             |                | (.csv)                 |                                  |
             +----------------+------------------------|                                  |
             | Other          | .csv                   |                                  |
+            +----------------+------------------------|                                  |
+            | Hathitrust     | .json                  |                                  |
             +----------------+------------------------+----------------------------------+
             """)
             

@@ -10,6 +10,7 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 import time
 import sys
+from tools import sourceformat as sf
 
 #===config===
 st.set_page_config(
@@ -57,18 +58,55 @@ def upload(extype):
     if 'Publication Year' in papers.columns:
                papers.rename(columns={'Publication Year': 'Year', 'Citing Works Count': 'Cited by',
                                      'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
+    
+    if "dimensions" in uploaded_file.name.lower():
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
+    
     return papers
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    col_dict = {'TI': 'Title',
-            'SO': 'Source title',
-            'DT': 'Document Type',
-            'AB': 'Abstract',
-            'PY': 'Year'}
-    papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-    papers.rename(columns=col_dict, inplace=True)
+    if "pmc" in uploaded_file.name.lower():
+        file = uploaded_file
+        papers = sf.medline(file)
+    else:
+        col_dict = {'TI': 'Title',
+                'SO': 'Source title',
+                'DE': 'Author Keywords',
+                'DT': 'Document Type',
+                'AB': 'Abstract',
+                'TC': 'Cited by',
+                'PY': 'Year',
+                'ID': 'Keywords Plus'}
+        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
+        papers.rename(columns=col_dict, inplace=True)
+    print(papers)
     return papers
+
+@st.cache_data(ttl=3600)
+def conv_json(extype):
+    col_dict={'title': 'title',
+    'rights_date_used': 'Year',
+    }
+    keywords = pd.read_json(uploaded_file)
+    keywords = sf.htrc(keywords)
+    keywords.rename(columns=col_dict,inplace=True)
+    return keywords
+
+def conv_pub(extype):
+    if (get_ext(extype)).endswith('.tar.gz'):
+        bytedata = extype.read()
+        keywords = sf.readPub(bytedata)
+    elif (get_ext(extype)).endswith('.xml'):
+        bytedata = extype.read()
+        keywords = sf.readxml(bytedata)
+    return keywords
 
 @st.cache_data(ttl=3600)
 def get_data(extype): 
@@ -226,7 +264,7 @@ def df_years(first_range, second_range):
     return filtered_df 
 
 #===Read data===
-uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt', 'json', 'tar.gz','xml'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
@@ -236,6 +274,10 @@ if uploaded_file is not None:
              papers = upload(extype) 
         elif extype.endswith('.txt'):
              papers = conv_txt(extype)
+        elif extype.endswith('.json'):
+            papers = conv_json(extype)
+        elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
+            papers = conv_pub(uploaded_file)
     
         df_col, selected_cols = get_data(extype)
         comparison = check_comparison(extype)
@@ -264,7 +306,7 @@ if uploaded_file is not None:
         
         paper = clean_csv(extype)
     
-        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
     
         with tab1:
              #===visualization===
@@ -349,7 +391,7 @@ if uploaded_file is not None:
         
                     with st.spinner('Processing. Please wait until the visualization comes up'):
                         running_scattertext('Topic Range', 'First range', 'Second range')
-    
+
                 else:
                     st.write('You only have data in ', (MAX))
     
@@ -360,6 +402,9 @@ if uploaded_file is not None:
             st.markdown('**Marrone, M., & Linnenluecke, M.K. (2020). Interdisciplinary Research Maps: A new technique for visualizing research topics. PLoS ONE, 15.** https://doi.org/10.1371/journal.pone.0242283')
             st.markdown('**Moreno, A., & Iglesias, C.A. (2021). Understanding Customers’ Transport Services with Topic Clustering and Sentiment Analysis. Applied Sciences.** https://doi.org/10.3390/app112110169')
             st.markdown('**Sánchez-Franco, M.J., & Rey-Tienda, S. (2023). The role of user-generated content in tourism decision-making: an exemplary study of Andalusia, Spain. Management Decision.** https://doi.org/10.1108/MD-06-2023-0966')
+
+        with tab4:
+            st.write("Click the :blue[Download SVG] on the right side.")
 
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")

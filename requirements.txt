@@ -31,3 +31,6 @@ git+https://github.com/faizhalas/burst_detection
 matplotlib
 scipy==1.12 #support gensim
 kaleido
+pymarc
+textblob
+vaderSentiment

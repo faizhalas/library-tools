@@ -18,6 +18,7 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 import sys
 import time
+from tools import sourceformat as sf
 
 #===config===
 st.set_page_config(
@@ -62,21 +63,59 @@ def get_ext(extype):
 @st.cache_data(ttl=3600)
 def upload(extype):
     papers = pd.read_csv(uploaded_file)
+
+    if "dimensions" in uploaded_file.name.lower():
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
+
     return papers
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    col_dict = {'TI': 'Title',
-            'SO': 'Source title',
-            'DT': 'Document Type',
-            'DE': 'Author Keywords',
-            'ID': 'Keywords Plus'}
-    papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-    papers.rename(columns=col_dict, inplace=True)
+    if "pmc" in uploaded_file.name.lower():
+        file = uploaded_file
+        papers = sf.medline(file)
+    else:
+        col_dict = {'TI': 'Title',
+                'SO': 'Source title',
+                'DE': 'Author Keywords',
+                'DT': 'Document Type',
+                'AB': 'Abstract',
+                'TC': 'Cited by',
+                'PY': 'Year',
+                'ID': 'Keywords Plus'}
+        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
+        papers.rename(columns=col_dict, inplace=True)
+    print(papers)
     return papers
 
+
+@st.cache_data(ttl=3600)
+def conv_json(extype):
+    col_dict={'title': 'title',
+    'rights_date_used': 'Year',
+    }
+    keywords = pd.read_json(uploaded_file)
+    keywords = sf.htrc(keywords)
+    keywords.rename(columns=col_dict,inplace=True)
+    return keywords
+
+def conv_pub(extype):
+    if (get_ext(extype)).endswith('.tar.gz'):
+        bytedata = extype.read()
+        keywords = sf.readPub(bytedata)
+    elif (get_ext(extype)).endswith('.xml'):
+        bytedata = extype.read()
+        keywords = sf.readxml(bytedata)
+    return keywords
+
 #===Read data===
-uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt','json','tar.gz', 'xml'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
@@ -85,6 +124,10 @@ if uploaded_file is not None:
              papers = upload(extype) 
         elif extype.endswith('.txt'):
              papers = conv_txt(extype)
+        elif extype.endswith('.json'):
+            papers = conv_json(extype)
+        elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
+            papers = conv_pub(uploaded_file)
         
         @st.cache_data(ttl=3600)
         def get_data_arul(extype):
@@ -171,7 +214,7 @@ if uploaded_file is not None:
                 'Maximum length of the itemsets generated',
                 2, 8, (2), on_change=reset_all)
     
-        tab1, tab2, tab3 = st.tabs(["📈 Result & Generate visualization", "📃 Reference", "📓 Recommended Reading"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📈 Result & Generate visualization", "📃 Reference", "📓 Recommended Reading","Downloda help"])
         
         with tab1:
             #===Association rules===
@@ -270,7 +313,13 @@ if uploaded_file is not None:
             st.markdown('**Brin, S., Motwani, R., Ullman, J. D., & Tsur, S. (1997). Dynamic itemset counting and implication rules for market basket data. ACM SIGMOD Record, 26(2), 255–264.** https://doi.org/10.1145/253262.253325')
             st.markdown('**Edmonds, J., & Johnson, E. L. (2003). Matching: A Well-Solved Class of Integer Linear Programs. Combinatorial Optimization — Eureka, You Shrink!, 27–30.** https://doi.org/10.1007/3-540-36478-1_3') 
             st.markdown('**Li, M. (2016, August 23). An exploration to visualise the emerging trends of technology foresight based on an improved technique of co-word analysis and relevant literature data of WOS. Technology Analysis & Strategic Management, 29(6), 655–671.** https://doi.org/10.1080/09537325.2016.1220518')
-
+        with tab4:
+            st.subheader("Download visualization")
+            st.text("Zoom in, zoom out, or shift the nodes as desired, then right-click and select Save image as ...")
+            st.markdown("![Downloading graph](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bidirected.jpg)")     
+            st.subheader("Download table as CSV")
+            st.text("Hover cursor over table, and click download arrow")
+            st.image("images/tablenetwork.png")
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()

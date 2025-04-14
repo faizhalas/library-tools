@@ -14,6 +14,7 @@ from io import StringIO
 from nltk.stem.snowball import SnowballStemmer
 import csv
 import sys
+from tools import sourceformat as sf
 
 #===config===
 st.set_page_config(
@@ -59,17 +60,37 @@ def get_ext(extype):
 @st.cache_data(ttl=3600)
 def upload(extype):
     keywords = pd.read_csv(uploaded_file)
+
+    if "dimensions" in uploaded_file.name.lower():
+        keywords = sf.dim(keywords)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        keywords.rename(columns=col_dict, inplace=True)
+
     return keywords
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    col_dict = {'TI': 'Title',
-            'SO': 'Source title',
-            'DE': 'Author Keywords',
-            'ID': 'Keywords Plus'}
-    keywords = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-    keywords.rename(columns=col_dict, inplace=True)
-    return keywords
+    if "pmc" in uploaded_file.name.lower():
+        file = uploaded_file
+        papers = sf.medline(file)
+    else:
+        col_dict = {'TI': 'Title',
+                'SO': 'Source title',
+                'DE': 'Author Keywords',
+                'DT': 'Document Type',
+                'AB': 'Abstract',
+                'TC': 'Cited by',
+                'PY': 'Year',
+                'ID': 'Keywords Plus'}
+        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
+        papers.rename(columns=col_dict, inplace=True)
+    print(papers)
+    return papers
+
 
 @st.cache_data(ttl=3600)
 def rev_conv_txt(extype):
@@ -81,12 +102,31 @@ def rev_conv_txt(extype):
     return keywords
 
 @st.cache_data(ttl=3600)
+def conv_json(extype):
+    col_dict={'title': 'title',
+    'rights_date_used': 'Year',
+    }
+    keywords = pd.read_json(uploaded_file)
+    keywords = sf.htrc(keywords)
+    keywords.rename(columns=col_dict,inplace=True)
+    return keywords
+
+def conv_pub(extype):
+    if (get_ext(extype)).endswith('.tar.gz'):
+        bytedata = extype.read()
+        keywords = sf.readPub(bytedata)
+    elif (get_ext(extype)).endswith('.xml'):
+        bytedata = extype.read()
+        keywords = sf.readxml(bytedata)
+    return keywords
+
+@st.cache_data(ttl=3600)
 def get_data(extype):
     list_of_column_key = list(keywords.columns)
     list_of_column_key = [k for k in list_of_column_key if 'Keyword' in k]
     return list_of_column_key
 
-uploaded_file = st.file_uploader('', type=['csv','txt'], on_change=reset_data)
+uploaded_file = st.file_uploader('', type=['csv','txt','json','tar.gz','xml'], on_change=reset_data)
 
 if uploaded_file is not None:
     try:
@@ -96,7 +136,12 @@ if uploaded_file is not None:
                       
         elif extype.endswith('.txt'):
             keywords = conv_txt(extype)
-             
+
+        elif extype.endswith('.json'):
+            keywords = conv_json(extype)
+        elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
+            keywords = conv_pub(uploaded_file)
+
         list_of_column_key = get_data(extype)
     
         col1, col2 = st.columns(2)
@@ -168,7 +213,7 @@ if uploaded_file is not None:
         st.divider()
               
         #===show & download csv===
-        tab1, tab2, tab3, tab4 = st.tabs(["📥 Result", "📥 List of Keywords", "📃 Reference", "📃 Recommended Reading"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📥 Result", "📥 List of Keywords", "📃 Reference", "📃 Recommended Reading","Download help"])
          
         with tab1:
             st.dataframe(keywords, use_container_width=True, hide_index=True)
@@ -232,7 +277,11 @@ if uploaded_file is not None:
             st.markdown('**Khyani, D., Siddhartha B S, Niveditha N M, &amp; Divya B M. (2020). An Interpretation of Lemmatization and Stemming in Natural Language Processing. Journal of University of Shanghai for Science and Technology , 22(10), 350–357.**  https://jusst.org/an-interpretation-of-lemmatization-and-stemming-in-natural-language-processing/')
             st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Text Pre-Processing. Text Mining for Information Professionals, 79–103.** https://doi.org/10.1007/978-3-030-85085-2_3')
 
-
+        with tab5:
+            st.text("Download keywords at bottom of table")
+            st.divider()
+            st.text("Download table")
+            st.image("images/downloadtable.png")
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()     

@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import sys
+from tools import sourceformat as sf
+
 
 #===config===
 st.set_page_config(
@@ -52,24 +54,62 @@ def upload(extype):
     if 'Publication Year' in papers.columns:
             papers.rename(columns={'Publication Year': 'Year', 'Citing Works Count': 'Cited by',
                                     'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
+    if "dimensions" in uploaded_file.name.lower():
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
     return papers
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    col_dict = {'TI': 'Title',
-            'SO': 'Source title',
-            'DT': 'Document Type',
-            'DE': 'Author Keywords',
-            'ID': 'Keywords Plus',
-            'AB': 'Abstract',
-            'TC': 'Cited by',
-            'PY': 'Year',}
-    papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-    papers.rename(columns=col_dict, inplace=True)
+    if "pmc" in uploaded_file.name.lower():
+        file = uploaded_file
+        papers = sf.medline(file)
+    else:
+        col_dict = {'TI': 'Title',
+                'SO': 'Source title',
+                'DE': 'Author Keywords',
+                'DT': 'Document Type',
+                'AB': 'Abstract',
+                'TC': 'Cited by',
+                'PY': 'Year',
+                'ID': 'Keywords Plus'}
+        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
+        papers.rename(columns=col_dict, inplace=True)
+    print(papers)
     return papers
 
+
+@st.cache_data(ttl=3600)
+def conv_json(extype):
+    col_dict={'title': 'title',
+    'rights_date_used': 'Year',
+    'content_provider_code': 'Document Type',
+    'Keywords':'Source title'
+    }
+    keywords = pd.read_json(uploaded_file)
+    keywords = sf.htrc(keywords)
+    keywords['Cited by'] = keywords.groupby(['Keywords'])['Keywords'].transform('size')
+    keywords.rename(columns=col_dict,inplace=True)
+    return keywords
+
+def conv_pub(extype):
+    if (get_ext(extype)).endswith('.tar.gz'):
+        bytedata = extype.read()
+        keywords = sf.readPub(bytedata)
+    elif (get_ext(extype)).endswith('.xml'):
+        bytedata = extype.read()
+        keywords = sf.readxml(bytedata)
+    keywords['Cited by'] = keywords.groupby(['Keywords'])['Keywords'].transform('size')
+    st.write(keywords)
+    return keywords
+
 #===Read data===
-uploaded_file = st.file_uploader('', type=['csv', 'txt'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt','json','tar.gz', 'xml'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
@@ -79,36 +119,45 @@ if uploaded_file is not None:
        
         elif extype.endswith('.txt'):
              papers = conv_txt(extype)
-        
+        elif extype.endswith('.json'):
+            papers = conv_json(extype)
+        elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
+            papers = conv_pub(uploaded_file)
+
         @st.cache_data(ttl=3600)
         def get_minmax(extype):
             extype = extype
             MIN = int(papers['Year'].min())
             MAX = int(papers['Year'].max())
+            MIN1 = int(papers['Cited by'].min())
+            MAX1 = int(papers['Cited by'].max())
             GAP = MAX - MIN
-            return papers, MIN, MAX, GAP
-        
-        tab1, tab2 = st.tabs(["📈 Generate visualization", "📓 Recommended Reading"])
+            return papers, MIN, MAX, GAP, MIN1, MAX1
+
+        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📓 Recommended Reading","Download help"])
         
         with tab1:    
             #===sunburst===
             try:
-                papers, MIN, MAX, GAP = get_minmax(extype)
+                papers, MIN, MAX, GAP, MIN1, MAX1 = get_minmax(extype)
             except KeyError:
                 st.error('Error: Please check again your columns.')
                 sys.exit(1)
             
             if (GAP != 0):
                 YEAR = st.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_all)
+                KEYLIM = st.slider('Cited By Count',min_value = MIN1, max_value = MAX1, value = (MIN1,MAX1), on_change=reset_all)
             else:
                 st.write('You only have data in ', (MAX))
                 YEAR = (MIN, MAX)
-            
+                KEYLIM = (MIN1,MAX1)
             @st.cache_data(ttl=3600)
             def listyear(extype):
                 global papers
                 years = list(range(YEAR[0],YEAR[1]+1))
+                cited = list(range(KEYLIM[0],KEYLIM[1]+1))
                 papers = papers.loc[papers['Year'].isin(years)]
+                papers = papers.loc[papers['Cited by'].isin(cited)]
                 return years, papers
             
             @st.cache_data(ttl=3600)
@@ -138,7 +187,11 @@ if uploaded_file is not None:
         with tab2:
             st.markdown('**numpy.average — NumPy v1.24 Manual. (n.d.). Numpy.Average — NumPy v1.24 Manual.** https://numpy.org/doc/stable/reference/generated/numpy.average.html')
             st.markdown('**Sunburst. (n.d.). Sunburst Charts in Python.** https://plotly.com/python/sunburst-charts/')
-    
+
+        with tab3:
+            st.text("Click the camera icon on the top right menu (you may need to hover your cursor within the visualization)")
+            st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
+
