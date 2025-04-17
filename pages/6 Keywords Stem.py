@@ -42,6 +42,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     
 
 st.header("Keywords Stem", anchor=False)
@@ -213,7 +214,7 @@ if uploaded_file is not None:
         st.divider()
               
         #===show & download csv===
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📥 Result", "📥 List of Keywords", "📃 Reference", "📃 Recommended Reading","Download help"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📥 Result", "📥 List of Keywords", "📃 Reference", "📃 Recommended Reading", "⬇️ Download Help"])
          
         with tab1:
             st.dataframe(keywords, use_container_width=True, hide_index=True)
