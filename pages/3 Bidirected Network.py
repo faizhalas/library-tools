@@ -46,6 +46,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     
 st.header("Bidirected Network", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -105,6 +106,7 @@ def conv_json(extype):
     keywords.rename(columns=col_dict,inplace=True)
     return keywords
 
+@st.cache_data(ttl=3600)
 def conv_pub(extype):
     if (get_ext(extype)).endswith('.tar.gz'):
         bytedata = extype.read()
@@ -214,7 +216,7 @@ if uploaded_file is not None:
                 'Maximum length of the itemsets generated',
                 2, 8, (2), on_change=reset_all)
     
-        tab1, tab2, tab3, tab4 = st.tabs(["📈 Result & Generate visualization", "📃 Reference", "📓 Recommended Reading","Downloda help"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📈 Result & Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
         
         with tab1:
             #===Association rules===
@@ -320,6 +322,7 @@ if uploaded_file is not None:
             st.subheader("Download table as CSV")
             st.text("Hover cursor over table, and click download arrow")
             st.image("images/tablenetwork.png")
+            
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
