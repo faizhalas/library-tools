@@ -33,6 +33,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     
 st.header("Sunburst Visualization", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -134,7 +135,7 @@ if uploaded_file is not None:
             GAP = MAX - MIN
             return papers, MIN, MAX, GAP, MIN1, MAX1
 
-        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📓 Recommended Reading","Download help"])
+        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📓 Recommended Reading", "⬇️ Download Help"])
         
         with tab1:    
             #===sunburst===
@@ -194,4 +195,3 @@ if uploaded_file is not None:
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
-
