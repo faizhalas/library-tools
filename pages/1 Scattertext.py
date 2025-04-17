@@ -38,6 +38,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     
 st.header("Scattertext", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -99,6 +100,7 @@ def conv_json(extype):
     keywords.rename(columns=col_dict,inplace=True)
     return keywords
 
+@st.cache_data(ttl=3600)
 def conv_pub(extype):
     if (get_ext(extype)).endswith('.tar.gz'):
         bytedata = extype.read()
@@ -160,18 +162,24 @@ def clean_csv(extype):
           
     #===lemmatize===
     lemmatizer = WordNetLemmatizer()
+    
+    @st.cache_data(ttl=3600)
     def lemmatize_words(text):
         words = text.split()
         words = [lemmatizer.lemmatize(word) for word in words]
         return ' '.join(words)
+        
     paper[ColCho] = paper[ColCho].apply(lemmatize_words)
     
     words_rmv = [word.strip() for word in words_to_remove.split(";")]
     remove_set = set(words_rmv)
+    
+    @st.cache_data(ttl=3600)
     def remove_words(text):
         words = text.split()  
         cleaned_words = [word for word in words if word not in remove_set]
         return ' '.join(cleaned_words) 
+        
     paper[ColCho] = paper[ColCho].apply(remove_words)
          
     return paper
@@ -306,7 +314,7 @@ if uploaded_file is not None:
         
         paper = clean_csv(extype)
     
-        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
     
         with tab1:
              #===visualization===
