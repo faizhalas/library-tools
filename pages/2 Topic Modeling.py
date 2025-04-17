@@ -30,7 +30,7 @@ import tmplot as tmp
 import tomotopy
 import sys
 import spacy
-import en_core_web_md
+import en_core_web_sm
 import pipeline
 from html2image import Html2Image
 from umap import UMAP
@@ -64,6 +64,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
 
 st.header("Topic Modeling", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -143,6 +144,7 @@ def conv_json(extype):
     keywords.rename(columns=col_dict,inplace=True)
     return keywords
 
+@st.cache_resource(ttl=3600)
 def conv_pub(extype):
     if (get_ext(extype)).endswith('.tar.gz'):
         bytedata = extype.read()
@@ -202,6 +204,8 @@ if uploaded_file is not None:
               
             #===lemmatize===
             lemmatizer = WordNetLemmatizer()
+            
+            @st.cache_resource(ttl=3600)
             def lemmatize_words(text):
                 words = text.split()
                 words = [lemmatizer.lemmatize(word) for word in words]
@@ -210,6 +214,8 @@ if uploaded_file is not None:
         
             words_rmv = [word.strip() for word in words_to_remove.split(";")]
             remove_dict = {word: None for word in words_rmv}
+            
+            @st.cache_resource(ttl=3600)
             def remove_words(text):
                  words = text.split()
                  cleaned_words = [word for word in words if word not in remove_dict]
@@ -239,9 +245,10 @@ if uploaded_file is not None:
                   bert_n_neighbors = t2.number_input('n_neighbors', value=15 , min_value=1, max_value=None, step=1)
                   bert_embedding_model = st.radio(
                        "embedding_model", 
-                       ["all-MiniLM-L6-v2", "paraphrase-multilingual-MiniLM-L12-v2", "en_core_web_md"], index=0, horizontal=True)
+                       ["all-MiniLM-L6-v2", "paraphrase-multilingual-MiniLM-L12-v2", "en_core_web_sm"], index=0, horizontal=True)
              else:
                   st.write('Please choose your preferred method')
+                 
         if st.button("Submit", on_click=reset_all):
              num_topic = num_cho  
     
@@ -253,7 +260,7 @@ if uploaded_file is not None:
             st.write('')
     
         elif method == 'pyLDA':       
-            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
     
             with tab1:
             #===visualization===
@@ -301,8 +308,10 @@ if uploaded_file is not None:
                             )
 
                         img_lda(vis)
+                        
+                        d1, d2 = st.columns(2)
                         with open("ldavis_img.png", "rb") as file:
-                            btn = st.download_button(
+                            btn = d1.download_button(
                                 label="Download image",
                                 data=file,
                                 file_name="ldavis_img.png",
@@ -317,7 +326,7 @@ if uploaded_file is not None:
                         resultf = resultf.explode(list(range(len(resultf.columns))), ignore_index=False)
                         
                         resultcsv = resultf.to_csv().encode("utf-8")
-                        st.download_button(
+                        d2.download_button(
                             label = "Download Results",
                             data=resultcsv,
                             file_name="results.csv",
@@ -365,7 +374,7 @@ if uploaded_file is not None:
                 top_topics = model.df_words_topics_
                 return topics_coords, phi, totaltop, perplexity, top_topics
     
-            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
             with tab1:
                 try:
                     with st.spinner('Performing computations. Please wait ...'): 
@@ -434,8 +443,8 @@ if uploaded_file is not None:
                 if bert_embedding_model == 'all-MiniLM-L6-v2':
                     emb_mod = 'all-MiniLM-L6-v2'
                     lang = 'en'
-                elif bert_embedding_model == 'en_core_web_md':
-                    emb_mod = en_core_web_md.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
+                elif bert_embedding_model == 'en_core_web_sm':
+                    emb_mod = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
                     lang = 'en'
                 elif bert_embedding_model == 'paraphrase-multilingual-MiniLM-L12-v2':
                     emb_mod = 'paraphrase-multilingual-MiniLM-L12-v2'
@@ -470,7 +479,7 @@ if uploaded_file is not None:
                 fig5 = topic_model.visualize_barchart(top_n_topics=num_topic)
                 return fig5
            
-            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
             with tab1:
                 try:
                     with st.spinner('Performing computations. Please wait ...'):
