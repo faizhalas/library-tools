@@ -42,6 +42,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/4 Sunburst.py", label="Sunburst", icon="4️⃣")
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
+    st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
 
 st.header("Burst Detection", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -419,7 +420,7 @@ if uploaded_file is not None:
         
         bursts, freq_data, num_unique_labels, num_rows = apply_burst_detection(top_words, yearly_term_frequency)
 
-        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading","Download help"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
 
         with tab1:        
             if bursts.empty:
