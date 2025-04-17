@@ -71,7 +71,7 @@ with mt1:
     with col24.container(border=True):
         st.markdown("![Sentiment](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentiment.png)")
         if st.button("Go to Sentiment Analysis"):
-            st.switch_page("pages/7 SentimentAnalysis.py")
+            st.switch_page("pages/7 Sentiment Analysis.py")
             
 with mt2:
     st.header("Before you start", anchor=False)
