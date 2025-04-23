@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import json
 from tools import sourceformat as sf
 
 #===config===
@@ -47,9 +48,18 @@ def upload(extype):
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if "pmc" in uploaded_file.name.lower():
+    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
         file = uploaded_file
         papers = sf.medline(file)
+        
+    elif("hathi" in uploaded_file.name.lower()):
+        papers = pd.read_csv(uploaded_file,sep = '\t')
+        papers = sf.htrc(papers)
+        col_dict={'title': 'title',
+        'rights_date_used': 'Year',
+        }
+        papers.rename(columns=col_dict, inplace=True) 
+
     else:
         col_dict = {'TI': 'Title',
                 'SO': 'Source title',
@@ -60,6 +70,7 @@ def conv_txt(extype):
                 'PY': 'Year',
                 'ID': 'Keywords Plus'}
         papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
+        
         papers.rename(columns=col_dict, inplace=True)
     print(papers)
     return papers
@@ -71,7 +82,11 @@ def conv_json(extype):
     'rights_date_used': 'Year',
     'content_provider_code':'Source title'
     }
-    keywords = pd.read_json(uploaded_file)
+
+    data = json.load(uploaded_file)
+    hathifile = data['gathers']
+    keywords = pd.DataFrame.from_records(hathifile)
+
     keywords = sf.htrc(keywords)
     keywords['Cited by'] = keywords.groupby(['Keywords'])['Keywords'].transform('size')
     keywords.rename(columns=col_dict,inplace=True)

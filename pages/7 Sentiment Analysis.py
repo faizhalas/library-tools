@@ -16,7 +16,7 @@ from textblob import TextBlob
 import os
 import numpy as np
 import plotly.express as px
-
+import json
 from tools import sourceformat as sf
 
 #===config===
@@ -91,9 +91,18 @@ def upload(file):
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if "pmc" in uploaded_file.name.lower():
+    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
         file = uploaded_file
         papers = sf.medline(file)
+
+    elif("hathi" in uploaded_file.name.lower()):
+        papers = pd.read_csv(uploaded_file,sep = '\t')
+        papers = sf.htrc(papers)
+        col_dict={'title': 'title',
+        'rights_date_used': 'Year',
+        }
+        papers.rename(columns=col_dict, inplace=True)
+        
     else:
         col_dict = {'TI': 'Title',
                 'SO': 'Source title',
@@ -114,7 +123,11 @@ def conv_json(extype):
     col_dict={'title': 'title',
     'rights_date_used': 'Year',
     }
-    keywords = pd.read_json(uploaded_file)
+
+    data = json.load(uploaded_file)
+    hathifile = data['gathers']
+    keywords = pd.DataFrame.from_records(hathifile)
+
     keywords = sf.htrc(keywords)
     keywords.rename(columns=col_dict,inplace=True)
     return keywords
@@ -159,7 +172,9 @@ if uploaded_file is not None:
         words_to_remove = c1.text_input("Remove specific words. Separate words by semicolons (;)")
         rem_copyright = c2.toggle('Remove copyright statement', value=True, on_change=reset_all)
         rem_punc = c2.toggle('Remove punctuation', value=True, on_change=reset_all)
-         
+        
+        wordcount = c2.number_input(label = "Words displayed", min_value = 0, step = 1)
+
         #===clean csv===
         @st.cache_data(ttl=3600, show_spinner=False)
         def clean_csv(extype):
@@ -201,13 +216,25 @@ if uploaded_file is not None:
 
             tab1, tab2, tab3, tab4 = st.tabs(["📈 Result", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
             with tab1:
-                paper['Sentiment'] = paper['Sentences__'].apply(get_sentiment)
+                
+                paper['Scores'] = paper['Sentences__'].apply(get_sentiment)
+
+                scoreframe = pd.DataFrame()
+
+                scoreframe['Phrase'] = pd.Series(paper['Sentences__'])
+
+                scoreframe[['Negativity','Neutrality','Positivity','Compound']] = pd.DataFrame.from_records(paper['Scores'])
+
+                scoreframe = scoreframe.groupby(scoreframe.columns.tolist(),as_index=False).size()
+
+                scoreframe = scoreframe.truncate(after = wordcount)
 
                 with st.expander("Sentence and Results"):
                     finalframe = pd.DataFrame()
-                    finalframe['Sentence'] = paper['Sentences__']
-                    finalframe['Sentiment'] = paper['Sentiment']
-            
+                    finalframe['Sentence'] = scoreframe['Phrase']
+                    finalframe[['Negativity','Neutrality','Positivity','Compound']] = scoreframe[['Negativity','Neutrality','Positivity','Compound']]
+                    finalframe[['Count']] = scoreframe[['size']]
+
                     st.dataframe(finalframe, use_container_width=True)
 
             with tab2:
@@ -265,34 +292,27 @@ if uploaded_file is not None:
 
             phraseframe["Score"] = phraseframe["Polarity"].apply(assignscore)
 
-            neut = phraseframe.drop(phraseframe[phraseframe['Score']=='Positive'].index)
+            neut = phraseframe.loc[phraseframe['Score']=="Neutral"]
+            neut.reset_index(inplace = True)
 
-            neut = neut.drop(neut[neut['Score']=='Negative'].index)
+            pos = phraseframe.loc[phraseframe['Score']=="Positive"]
+            pos.reset_index(inplace = True)
 
-            frame = phraseframe.drop(phraseframe[phraseframe['Score']=='Neutral'].index)
-
-            pos = frame.drop(frame[frame['Score']=='Negative'].index)
-
-            neg = frame.drop(frame[frame['Score']=='Positive'].index)
-
-
+            neg = phraseframe.loc[phraseframe['Score']=="Negative"]
+            neg.reset_index(inplace = True)
 
             paper['Sentiment'] = paper['Sentences__'].apply(get_sentimentb)
 
             pos.sort_values(by=["size"], inplace = True, ascending = False, ignore_index = True)
-
-            pos = pos.truncate(after = 10)
-
+            pos = pos.truncate(after = wordcount)
 
             neg.sort_values(by=["size"], inplace = True, ascending = False, ignore_index = True)
-            
-            neg = neg.truncate(after = 10)
+            neg = neg.truncate(after = wordcount)
         
             neut.sort_values(by=["size"], inplace = True, ascending = False, ignore_index = True)
+            neut = neut.truncate(after = wordcount)
 
-            neut = neut.truncate(after = 10)
-
-            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
+            tab1, tab2, tab3, tab4, tab5 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help", "Interpreting Results"])
             with tab1:
                 #display tables and graphs
     
@@ -315,7 +335,7 @@ if uploaded_file is not None:
                 with st.expander("Sentence and Results"):
                     finalframe = pd.DataFrame()
                     finalframe['Sentence'] = paper['Sentences__']
-                    finalframe['Sentiment'] = paper['Sentiment']
+                    finalframe[['Polarity','Subjectivity']] = pd.DataFrame(paper['Sentiment'].tolist(), index = paper.index)
             
                     st.dataframe(finalframe, use_container_width=True)
 
@@ -329,7 +349,15 @@ if uploaded_file is not None:
             with tab4:
                 st.write('Empty')
 
+            with tab5:
+                st.header("TextBlob")
+                st.write("Polarity represents positive, negative, and neutral tone, and is between [-1, 1]. -1 is very negative, 1 is very positive")
+                st.write("Subjectivity represents objectiveness and subjectiveness, and is between [0, 1]. 0 is very objective, 1 is very subjective.")
+                
+                st.header("NLTKVader")
 
-    except:
+
+    except Exception as e:
+        st.write(e)
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()

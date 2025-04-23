@@ -18,6 +18,7 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 import sys
 import time
+import json
 from tools import sourceformat as sf
 
 #===config===
@@ -78,9 +79,18 @@ def upload(extype):
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if "pmc" in uploaded_file.name.lower():
+    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
         file = uploaded_file
         papers = sf.medline(file)
+
+    elif("hathi" in uploaded_file.name.lower()):
+        papers = pd.read_csv(uploaded_file,sep = '\t')
+        papers = sf.htrc(papers)
+        col_dict={'title': 'title',
+        'rights_date_used': 'Year',
+        }
+        papers.rename(columns=col_dict, inplace=True)
+        
     else:
         col_dict = {'TI': 'Title',
                 'SO': 'Source title',
@@ -101,7 +111,11 @@ def conv_json(extype):
     col_dict={'title': 'title',
     'rights_date_used': 'Year',
     }
-    keywords = pd.read_json(uploaded_file)
+
+    data = json.load(uploaded_file)
+    hathifile = data['gathers']
+    keywords = pd.DataFrame.from_records(hathifile)
+    
     keywords = sf.htrc(keywords)
     keywords.rename(columns=col_dict,inplace=True)
     return keywords

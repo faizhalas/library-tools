@@ -263,10 +263,10 @@ def readxml(file):
 
 def medline(file):
 
-    somet = file.read()
+    textfile = file.read()
 
 
-    text = somet.decode()
+    text = textfile.decode()
 
 
 
@@ -275,12 +275,16 @@ def medline(file):
     authors = []
     titles = []
     year = []
+    meshkeys = []
+    otherkeys = []
 
     #articles are separated by newlines so seperate them
     articles = text.split('\n\n')
 
     for paper in articles:
-        names = ""         
+        names = ""
+        meshk = ""
+        otherk = ""         
         largetext = paper.splitlines()
         for line in largetext:
             #title
@@ -299,17 +303,26 @@ def medline(file):
             if "DP  - " in line:
                 startpos = line.index("-") + 2
                 year.append(int(line[startpos:startpos+4]))
-        authors.append(names)
+            #key terms
+            if "MH  - " in line:
+                startpos = line.index("-") + 2
+                meshk += line[startpos:] + "; "
+            if"OT  - " in line:
+                startpos = line.index("-") + 2
+                otherk += line[startpos:] + "; "
     
-    print(authors)
-    print(titles)
-    print(year)
+        authors.append(names)
+        meshkeys.append(meshk)
+        otherkeys.append(otherk)
 
     frame = pd.DataFrame()
     
     frame['Title'] = pd.Series(titles)
     frame['Authors'] = pd.Series(authors)
     frame['Year'] = pd.Series(year)
+    frame['MeSH Keywords'] = pd.Series(meshkeys)
+    frame['Other Keywords'] = pd.Series(otherkeys)
+
     frame.fillna(value = "empty", inplace = True)
 
     return frame
