@@ -36,7 +36,6 @@ from html2image import Html2Image
 from umap import UMAP
 import os
 import time
-import json
 from tools import sourceformat as sf
 
 #===config===
@@ -117,18 +116,9 @@ def upload(file):
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
+    if "pmc" in uploaded_file.name.lower():
         file = uploaded_file
         papers = sf.medline(file)
-
-    elif("hathi" in uploaded_file.name.lower()):
-        papers = pd.read_csv(uploaded_file,sep = '\t')
-        papers = sf.htrc(papers)
-        col_dict={'title': 'title',
-        'rights_date_used': 'Year',
-        }
-        papers.rename(columns=col_dict, inplace=True)
-        
     else:
         col_dict = {'TI': 'Title',
                 'SO': 'Source title',
@@ -149,11 +139,7 @@ def conv_json(extype):
     col_dict={'title': 'title',
     'rights_date_used': 'Year',
     }
-
-    data = json.load(uploaded_file)
-    hathifile = data['gathers']
-    keywords = pd.DataFrame.from_records(hathifile)
-    
+    keywords = pd.read_json(uploaded_file)
     keywords = sf.htrc(keywords)
     keywords.rename(columns=col_dict,inplace=True)
     return keywords
@@ -362,7 +348,8 @@ if uploaded_file is not None:
                 st.subheader(':blue[pyLDA]', anchor=False)
                 st.button('Download image')
                 st.text("Click Download Image button.")
-                st.subheader("Downloading CSV results")
+                st.divider()
+                st.subheader(':blue[Downloading CSV Results]', anchor=False)
                 st.button("Download Results")
                 st.text("Click Download results button at bottom of page")
 
@@ -441,8 +428,9 @@ if uploaded_file is not None:
             with tab4:
                 st.subheader(':blue[Biterm]', anchor=False)
                 st.text("Click the three dots at the top right then select the desired format.")
-                st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_biterm.jpg)")          
-                st.subheader("Downloading CSV Results")
+                st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_biterm.jpg)")  
+                st.divider()
+                st.subheader(':blue[Downloading CSV Results]', anchor=False)
                 st.button("Download Results")
                 st.text("Click Download results button at bottom of page")
 
@@ -535,10 +523,12 @@ if uploaded_file is not None:
                         resultf = pd.DataFrame(results)
                         resultcsv = resultf.to_csv().encode("utf-8")
                         st.download_button(
-                        label = "Download Results",
-                        data=resultcsv,
-                        file_name="results.csv",
-                        mime="text\csv")
+                            label = "Download Results",
+                            data=resultcsv,
+                            file_name="results.csv",
+                            mime="text\csv",
+                            on_click="ignore",
+                        )
 
                 except ValueError:
                     st.error('🙇‍♂️ Please raise the number of topics and click submit')
@@ -558,7 +548,8 @@ if uploaded_file is not None:
                 st.subheader(':blue[BERTopic]', anchor=False)
                 st.text("Click the camera icon on the top right menu")
                 st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
-                st.subheader("Downloading CSV Results")
+                st.divider()
+                st.subheader(':blue[Downloading CSV Results]', anchor=False)
                 st.button("Download Results")
                 st.text("Click Download results button at bottom of page")
 
