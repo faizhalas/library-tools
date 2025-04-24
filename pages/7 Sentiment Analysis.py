@@ -161,7 +161,7 @@ if uploaded_file is not None:
 
         coldf = sorted(papers.select_dtypes(include=['object']).columns.tolist())
             
-        c1, c2 = st.columns([6,4])
+        c1, c2 = st.columns(2)
         ColCho = c1.selectbox(
                 'Choose column',
                 (coldf), on_change=reset_all)
@@ -169,11 +169,10 @@ if uploaded_file is not None:
             'Choose method',[
             'TextBlob','NLTKvader']
         )
-        words_to_remove = c1.text_input("Remove specific words. Separate words by semicolons (;)")
-        rem_copyright = c2.toggle('Remove copyright statement', value=True, on_change=reset_all)
+        words_to_remove = c1.text_input("Remove specific words. Separate words by semicolons (;)")        
+        wordcount = c2.number_input(label = "Words displayed", min_value = 1, step = 1, value=5)-1
+        rem_copyright = c1.toggle('Remove copyright statement', value=True, on_change=reset_all)
         rem_punc = c2.toggle('Remove punctuation', value=True, on_change=reset_all)
-        
-        wordcount = c2.number_input(label = "Words displayed", min_value = 0, step = 1)
 
         #===clean csv===
         @st.cache_data(ttl=3600, show_spinner=False)
@@ -241,11 +240,12 @@ if uploaded_file is not None:
                 st.markdown('**Hutto, C. and Gilbert, E. (2014) ‘VADER: A Parsimonious Rule-Based Model for Sentiment Analysis of Social Media Text’, Proceedings of the International AAAI Conference on Web and Social Media, 8(1), pp. 216–225.** https://doi.org/10.1609/icwsm.v8i1.14550')
 
             with tab3:
-                st.markdown('**Author** URL')
-                st.markdown('**Author** URL')
+                st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Sentiment Analysis. Text Mining for Information Professionals, 191–211.** https://doi.org/10.1007/978-3-030-85085-2_7')
 
             with tab4:
-                st.write('Empty')
+                st.subheader(':blue[CSV Results]', anchor=False)
+                st.text("Click Download button")
+                st.markdown("![Downloading results](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentitable.png)")
         
         elif(method == 'TextBlob'):
             
@@ -312,7 +312,7 @@ if uploaded_file is not None:
             neut.sort_values(by=["size"], inplace = True, ascending = False, ignore_index = True)
             neut = neut.truncate(after = wordcount)
 
-            tab1, tab2, tab3, tab4, tab5 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help", "Interpreting Results"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
             with tab1:
                 #display tables and graphs
     
@@ -343,20 +343,18 @@ if uploaded_file is not None:
                 st.markdown('**Steven, L. et al. (2018) TextBlob: Simplified Text Processing — TextBlob 0.15.2 documentation, Readthedocs.io.** https://textblob.readthedocs.io/en/dev/')
 
             with tab3:
-                st.markdown('**Author** URL')
-                st.markdown('**Author** URL')
+                st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Sentiment Analysis. Text Mining for Information Professionals, 191–211.** https://doi.org/10.1007/978-3-030-85085-2_7')
 
             with tab4:
-                st.write('Empty')
+                st.subheader(':blue[Sentiment Analysis]', anchor=False)
+                st.write("Click the three dots at the top right then select the desired format")
+                st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_sentiment.png)")
+                st.divider()
+                st.subheader(':blue[CSV Results]', anchor=False)
+                st.text("Click Download button")
+                st.markdown("![Downloading results](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentitable.png)")
 
-            with tab5:
-                st.header("TextBlob")
-                st.write("Polarity represents positive, negative, and neutral tone, and is between [-1, 1]. -1 is very negative, 1 is very positive")
-                st.write("Subjectivity represents objectiveness and subjectiveness, and is between [0, 1]. 0 is very objective, 1 is very subjective.")
-                
-                st.header("NLTKVader")
-
-
+    
     except Exception as e:
         st.write(e)
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
