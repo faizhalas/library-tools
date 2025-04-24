@@ -28,56 +28,54 @@ mt1, mt2 = st.tabs(["Menu", "How to"])
 
 with mt1:   
 
-    st.header("Visualizations",divider=True)
-
-    col1, col2, col3 = st.columns(3)
-    with col1.container(border=True):
-        st.markdown("![Scattertext](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/scattertext.png)")
-        if st.button("Go to Scattertext"):
-            st.switch_page("pages/1 Scattertext.py")     
-
-
-    with col2.container(border=True):
-        st.markdown("![Sunburst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sunburst.png)")
-        if st.button("Go to Sunburst Visualization"):
-            st.switch_page("pages/4 Sunburst.py")
-
-
-    with col3.container(border=True):
-        st.markdown("![Bidirected network](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/bidirected.png)")
-        if st.button("Go to Bidirected Network"):
-            st.switch_page("pages/3 Bidirected Network.py")
-
-
     st.header("Analysis",divider=True)
 
-    col21,col22, col23, col24 = st.columns(4)
+    col1,col2, col3, col4 = st.columns(4)
 
-    with col21.container(border=True):
-        st.markdown("![Topic modeling](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/topicmodeling.png)")
-        if st.button("Go to Topic Modeling"):
-            st.switch_page("pages/2 Topic Modeling.py")
+    with col1.container(border=True):
+        st.markdown("![Stemming](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/lemma.png)")
+        if st.button("Go to Keywords Stem"):
+            st.switch_page("pages/6 Keywords Stem.py")         
+
     
-    with col22.container(border=True):
+    with col2.container(border=True):
         st.markdown("![Burst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/burst.png)")
         if st.button("Go to Burst Detection"):
             st.switch_page("pages/5 Burst Detection.py")
     
-    with col23.container(border=True):
-        st.markdown("![Stemming](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/lemma.png)")
-        if st.button("Go to Keywords Stem"):
-            st.switch_page("pages/6 Keywords Stem.py")     
+    with col3.container(border=True):
+        st.markdown("![Topic modeling](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/topicmodeling.png)")
+        if st.button("Go to Topic Modeling"):
+            st.switch_page("pages/2 Topic Modeling.py")   
     
-    with col24.container(border=True):
+    with col4.container(border=True):
         st.markdown("![Sentiment](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentiment.png)")
         if st.button("Go to Sentiment Analysis"):
             st.switch_page("pages/7 Sentiment Analysis.py")
-            
+    
+    st.header("Visualizations",divider=True)
+
+    col21, col22, col23 = st.columns(3)
+    with col21.container(border=True):
+        st.markdown("![Scattertext](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/scattertext.png)")
+        if st.button("Go to Scattertext"):
+            st.switch_page("pages/1 Scattertext.py")     
+
+    with col22.container(border=True):
+        st.markdown("![Sunburst](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sunburst.png)")
+        if st.button("Go to Sunburst Visualization"):
+            st.switch_page("pages/4 Sunburst.py")
+
+    with col23.container(border=True):
+        st.markdown("![Bidirected network](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/bidirected.png)")
+        if st.button("Go to Bidirected Network"):
+            st.switch_page("pages/3 Bidirected Network.py")            
+
 with mt2:
     st.header("Before you start", anchor=False)
     option = st.selectbox(
         'Please choose....',
-        ('Keyword Stem', 'Topic Modeling', 'Bidirected Network', 'Sunburst', 'Burst Detection', 'Scattertext'))
+        ('Keyword Stem', 'Topic Modeling', 'Bidirected Network', 'Sunburst', 'Burst Detection', 'Scattertext','Sentiment Analysis'))
    
     if option == 'Keyword Stem':
         tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Result"])
@@ -351,3 +349,75 @@ with mt2:
         with tab4:
             st.subheader(':blue[Scattertext]', anchor=False)
             st.write("Click the :blue[Download SVG] on the right side.")
+
+    elif option == 'Scattertext':
+        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
+        with tab1:
+            st.write("Scattertext is an open-source tool designed to visualize linguistic variations between document categories in a language-independent way. It presents a scatterplot, with each axis representing the rank-frequency of a term's occurrence within a category of documents.") 
+            st.divider()
+            st.write('💡 The idea came from this:') 
+            st.write('Kessler, J. S. (2017). Scattertext: a Browser-Based Tool for Visualizing how Corpora Differ. https://doi.org/10.48550/arXiv.1703.00565')
+                
+        with tab2:
+            st.text("1. Put your file. Choose your preferred column to analyze.")
+            st.text("2. Choose your preferred method to compare and decide words you want to remove.")
+            st.text("3. Finally, you can visualize your data.")
+            st.error("This app includes lemmatization and stopwords. Currently, we only offer English words.", icon="💬")
+            
+        with tab3:
+            st.text("""
+            +----------------+------------------------+----------------------------------+
+            |     Source     |       File Type        |              Column              |
+            +----------------+------------------------+----------------------------------+
+            | Scopus         | Comma-separated values | Choose your preferred column     |
+            |                | (.csv)                 | that you have                    |
+            +----------------+------------------------|                                  |
+            | Web of Science | Tab delimited file     |                                  |
+            |                | (.txt)                 |                                  |
+            +----------------+------------------------|                                  |
+            | Lens.org       | Comma-separated values |                                  |
+            |                | (.csv)                 |                                  |
+            +----------------+------------------------|                                  |
+            | Other          | .csv                   |                                  |
+            +----------------+------------------------|                                  |
+            | Hathitrust     | .json                  |                                  |
+            +----------------+------------------------+----------------------------------+
+            """)
+            
+        with tab4:
+            st.subheader(':blue[Scattertext]', anchor=False)
+            st.write("Click the :blue[Download SVG] on the right side.")
+
+    elif option == 'Sentiment Analysis':
+        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
+        with tab1:
+            st.write("")
+        with tab2:
+            st.write("Step 1. Put your file. Choose your prefered column to analyze")
+            st.write("Step 2. Choose your preferred method and decide which words you want to remove")
+            st.write("Step 3. Finally, you can visualize your data.")
+        with tab3:
+            st.text("""
+            +----------------+------------------------+----------------------------------+
+            |     Source     |       File Type        |              Column              |
+            +----------------+------------------------+----------------------------------+
+            | Scopus         | Comma-separated values | Choose your preferred column     |
+            |                | (.csv)                 | that you have                    |
+            +----------------+------------------------|                                  |
+            | Web of Science | Tab delimited file     |                                  |
+            |                | (.txt)                 |                                  |
+            +----------------+------------------------|                                  |
+            | Lens.org       | Comma-separated values |                                  |
+            |                | (.csv)                 |                                  |
+            +----------------+------------------------|                                  |
+            | Other          | .csv                   |                                  |
+            +----------------+------------------------|                                  |
+            | Hathitrust     | .json                  |                                  |
+            +----------------+------------------------+----------------------------------+
+            """)
+        with tab4:
+            st.subheader(':blue[Sentimenet Analysis]', anchor=False)
+            st.write("Click the three dots at the top right then select the desired format")
+            st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_sentiment.png)")
+            st.subheader("Downloading CSV Results")
+            st.markdown("![Downloading results](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentitable.png)")
