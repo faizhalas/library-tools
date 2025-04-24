@@ -95,7 +95,7 @@ with mt2:
             st.error("Please check what has changed. It's possible some keywords failed to find their roots.", icon="🚨")
             
         with tab3:
-            st.text("""
+            st.code("""
             +----------------+------------------------+---------------------------------+
             |     Source     |       File Type        |             Column              |
             +----------------+------------------------+---------------------------------+
@@ -114,8 +114,8 @@ with mt2:
             | Other          | .csv                   | Change your column to 'Keyword' |
             +----------------+------------------------+---------------------------------+
             | Hathitrust     | .json                  | htid (Hathitrust ID)            |
-            +----------------+------------------------+---------------------------------+           
-            """)
+            +----------------+------------------------+---------------------------------+
+            """, language=None)
 
         with tab4:  
              st.subheader(':blue[Result]', anchor=False)
@@ -142,7 +142,7 @@ with mt2:
             st.error("This app includes lemmatization and stopwords for the abstract text. Currently, we only offer English words.", icon="💬")
             
         with tab3:
-            st.text("""
+            st.code("""
             +----------------+------------------------+----------------------------------+
             |     Source     |       File Type        |              Column              |
             +----------------+------------------------+----------------------------------+
@@ -159,22 +159,27 @@ with mt2:
             +----------------+------------------------|                                  |
             | Hathitrust     | .json                  |                                  |
             +----------------+------------------------+----------------------------------+
-            """)
+            """, language=None)
 
         with tab4:  
-             st.subheader(':blue[pyLDA]', anchor=False)
-             st.button('Download image')
-             st.text("Click Download Image button.")
+            st.subheader(':blue[pyLDA]', anchor=False)
+            st.button('Download image')
+            st.text("Click Download Image button.")
              
-             st.divider()
-             st.subheader(':blue[Biterm]', anchor=False)
-             st.text("Click the three dots at the top right then select the desired format.")
-             st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_biterm.jpg)")
+            st.divider()
+            st.subheader(':blue[Biterm]', anchor=False)
+            st.text("Click the three dots at the top right then select the desired format.")
+            st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_biterm.jpg)")
              
-             st.divider()
-             st.subheader(':blue[BERTopic]', anchor=False)
-             st.text("Click the camera icon on the top right menu")
-             st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
+            st.divider()
+            st.subheader(':blue[BERTopic]', anchor=False)
+            st.text("Click the camera icon on the top right menu")
+            st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
+
+            st.divider()
+            st.subheader(':blue[CSV Result]', anchor=False)
+            st.text("Click Download button")
+            st.button('Download Results')
                              
     elif option == 'Bidirected Network':
         tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Graph"])
@@ -196,7 +201,7 @@ with mt2:
             st.error("If the table contains many rows, the network will take more time to process. Please use it efficiently.", icon="⌛")
             
         with tab3:
-            st.text("""
+            st.code("""
             +----------------+------------------------+---------------------------------+
             |     Source     |       File Type        |             Column              |
             +----------------+------------------------+---------------------------------+
@@ -217,7 +222,7 @@ with mt2:
             +----------------+------------------------+---------------------------------+
             | Hathitrust     | .json                  | htid (Hathitrust ID)            |
             +----------------+------------------------+---------------------------------+
-            """)    
+            """, language=None)    
 
         with tab4:  
              st.subheader(':blue[Bidirected Network]', anchor=False)
@@ -238,7 +243,7 @@ with mt2:
             st.code('avg = sum(a * weights) / sum(weights)', language='python')
             
         with tab3:
-            st.text("""
+            st.code("""
             +----------------+------------------------+--------------------+
             |     Source     |       File Type        |     Column         |
             +----------------+------------------------+--------------------+
@@ -255,7 +260,7 @@ with mt2:
             +----------------+------------------------+--------------------+
             | Hathitrust     | .json                  | htid(Hathitrust ID)|
             +----------------+------------------------+--------------------+
-            """)          
+            """, language=None)          
 
         with tab4:  
              st.subheader(':blue[Sunburst]', anchor=False)
@@ -278,7 +283,7 @@ with mt2:
             st.error("This app includes lemmatization and stopwords. Currently, we only offer English words.", icon="💬")
             
         with tab3:
-            st.text("""
+            st.code("""
             +----------------+------------------------+----------------------------------+
             |     Source     |       File Type        |              Column              |
             +----------------+------------------------+----------------------------------+
@@ -295,7 +300,7 @@ with mt2:
             +----------------+------------------------|                                  |
             | Hathitrust     | .json                  |                                  |
             +----------------+------------------------+----------------------------------+
-            """)
+            """, language=None)
             
         with tab4:
             st.subheader(':blue[Burst Detection]', anchor=False)
@@ -327,7 +332,7 @@ with mt2:
             st.error("This app includes lemmatization and stopwords. Currently, we only offer English words.", icon="💬")
             
         with tab3:
-            st.text("""
+            st.code("""
             +----------------+------------------------+----------------------------------+
             |     Source     |       File Type        |              Column              |
             +----------------+------------------------+----------------------------------+
@@ -344,60 +349,28 @@ with mt2:
             +----------------+------------------------|                                  |
             | Hathitrust     | .json                  |                                  |
             +----------------+------------------------+----------------------------------+
-            """)
+            """, language=None)
             
         with tab4:
             st.subheader(':blue[Scattertext]', anchor=False)
             st.write("Click the :blue[Download SVG] on the right side.")
 
-    elif option == 'Scattertext':
-        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
-        with tab1:
-            st.write("Scattertext is an open-source tool designed to visualize linguistic variations between document categories in a language-independent way. It presents a scatterplot, with each axis representing the rank-frequency of a term's occurrence within a category of documents.") 
-            st.divider()
-            st.write('💡 The idea came from this:') 
-            st.write('Kessler, J. S. (2017). Scattertext: a Browser-Based Tool for Visualizing how Corpora Differ. https://doi.org/10.48550/arXiv.1703.00565')
-                
-        with tab2:
-            st.text("1. Put your file. Choose your preferred column to analyze.")
-            st.text("2. Choose your preferred method to compare and decide words you want to remove.")
-            st.text("3. Finally, you can visualize your data.")
-            st.error("This app includes lemmatization and stopwords. Currently, we only offer English words.", icon="💬")
-            
-        with tab3:
-            st.text("""
-            +----------------+------------------------+----------------------------------+
-            |     Source     |       File Type        |              Column              |
-            +----------------+------------------------+----------------------------------+
-            | Scopus         | Comma-separated values | Choose your preferred column     |
-            |                | (.csv)                 | that you have                    |
-            +----------------+------------------------|                                  |
-            | Web of Science | Tab delimited file     |                                  |
-            |                | (.txt)                 |                                  |
-            +----------------+------------------------|                                  |
-            | Lens.org       | Comma-separated values |                                  |
-            |                | (.csv)                 |                                  |
-            +----------------+------------------------|                                  |
-            | Other          | .csv                   |                                  |
-            +----------------+------------------------|                                  |
-            | Hathitrust     | .json                  |                                  |
-            +----------------+------------------------+----------------------------------+
-            """)
-            
-        with tab4:
-            st.subheader(':blue[Scattertext]', anchor=False)
-            st.write("Click the :blue[Download SVG] on the right side.")
 
     elif option == 'Sentiment Analysis':
         tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
         with tab1:
-            st.write("")
+            st.write('Sentiment analysis uses natural language processing to identify patterns in large text datasets, revealing the writer’s opinions, emotions, and attitudes. It assesses subjectivity (objective vs. subjective), polarity (positive, negative, neutral), and emotions (e.g., anger, joy, sadness, surprise, jealousy).') 
+            st.divider()
+            st.write('💡 The idea came from this:')
+            st.write('Lamba, M., & Madhusudhan, M. (2021, July 31). Sentiment Analysis. Text Mining for Information Professionals, 191–211. https://doi.org/10.1007/978-3-030-85085-2_7')
+            
         with tab2:
-            st.write("Step 1. Put your file. Choose your prefered column to analyze")
-            st.write("Step 2. Choose your preferred method and decide which words you want to remove")
-            st.write("Step 3. Finally, you can visualize your data.")
+            st.write("1. Put your file. Choose your prefered column to analyze")
+            st.write("2. Choose your preferred method and decide which words you want to remove")
+            st.write("3. Finally, you can visualize your data.")
+            
         with tab3:
-            st.text("""
+            st.code("""
             +----------------+------------------------+----------------------------------+
             |     Source     |       File Type        |              Column              |
             +----------------+------------------------+----------------------------------+
@@ -414,10 +387,13 @@ with mt2:
             +----------------+------------------------|                                  |
             | Hathitrust     | .json                  |                                  |
             +----------------+------------------------+----------------------------------+
-            """)
+            """, language=None)
+            
         with tab4:
-            st.subheader(':blue[Sentimenet Analysis]', anchor=False)
+            st.subheader(':blue[Sentiment Analysis]', anchor=False)
             st.write("Click the three dots at the top right then select the desired format")
             st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_sentiment.png)")
-            st.subheader("Downloading CSV Results")
+            st.divider()
+            st.subheader(':blue[CSV Results]', anchor=False)
+            st.text("Click Download button")
             st.markdown("![Downloading results](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentitable.png)")
