@@ -34,3 +34,4 @@ kaleido
 pymarc
 textblob
 vaderSentiment
+git+https://github.com/faizhalas/shifterator
