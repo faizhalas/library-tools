@@ -496,7 +496,7 @@ if uploaded_file is not None:
             csv = shifts_dfs(type2freq_1, type2freq_2)
 
             d2.download_button(
-                "📥 Press to download result",
+                "📥 Click to download result",
                 csv,
                 "shiftertor_dataframe.csv",
                 "text/csv")
@@ -516,7 +516,7 @@ if uploaded_file is not None:
 
             st.divider()
             st.subheader(':blue[Shifterator Dataframe]', anchor=False)
-            st.button('📥 Press to download result')
+            st.button('📥 Click to download result')
             st.text("Click the Download button to get the CSV result.") 
 
     except Exception as e:
