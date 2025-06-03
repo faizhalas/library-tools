@@ -40,6 +40,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
+    st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
     
 st.header("Scattertext", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -215,13 +216,11 @@ def running_scattertext(cat_col, catname, noncatname):
                                 nlp = stx.whitespace_nlp_with_sentences,
                                 ).build().get_unigram_corpus().remove_infrequent_words(minimum_term_count = min_term)        
                                 
-        #table results (temporary placement)
+        #table results
         disp = stx.Dispersion(corpus)
         disp_df = disp.get_df()
-        disp_df.head(3)
-        st.dataframe(disp_df)
 
-        st.toast('Building corpus completed', icon='🎉')
+        disp_csv = disp_df.to_csv(index=False).encode('utf-8')
             
         try:
             html = stx.produce_scattertext_explorer(corpus,
@@ -241,11 +240,8 @@ def running_scattertext(cat_col, catname, noncatname):
                                                 width_in_pixels = 900,
                                                 minimum_term_frequency = 0,
                                                 save_svg_button=True)
-    
-        st.toast('Process completed', icon='🎉')
-        time.sleep(1)
-        st.toast('Visualizing', icon='⏳')
-        components.html(html, height = 1200, scrolling = True) 
+
+        return disp_csv, html 
 
     except ValueError:
         st.warning('Please decrease the Minimum term count in the advanced settings.', icon="⚠️")
@@ -356,7 +352,7 @@ if uploaded_file is not None:
                     st.warning(f'We cannot find {text2} in your document.', icon="⚠️")
                 else:
                     with st.spinner('Processing. Please wait until the visualization comes up'):
-                        running_scattertext('Topic', 'First Term', 'Second Term')
+                        disp_df, html = running_scattertext('Topic', 'First Term', 'Second Term')
         
             elif compare == 'Manual label':
                 col1, col2, col3 = st.columns(3)
@@ -383,7 +379,7 @@ if uploaded_file is not None:
                 filtered_df = paper[paper[column_selected].isin([label1, label2])].reset_index(drop=True)
                 
                 with st.spinner('Processing. Please wait until the visualization comes up'):
-                    running_scattertext(column_selected, label1, label2)
+                    disp_df, html = running_scattertext(column_selected, label1, label2)
         
             elif compare == 'Sources':
                 col1, col2, col3 = st.columns([4,0.1,4])
@@ -404,7 +400,7 @@ if uploaded_file is not None:
                 filtered_df = df_sources(stitle1, stitle2)
         
                 with st.spinner('Processing. Please wait until the visualization comes up'):
-                    running_scattertext('Source title', stitle1, stitle2)
+                    disp_df, html = running_scattertext('Source title', stitle1, stitle2)
         
             elif compare == 'Years':
                 col1, col2, col3 = st.columns([4,0.1,4])
@@ -418,23 +414,44 @@ if uploaded_file is not None:
                     filtered_df = df_years(first_range, second_range)
         
                     with st.spinner('Processing. Please wait until the visualization comes up'):
-                        running_scattertext('Topic Range', 'First range', 'Second range')
-
+                        disp_df, html = running_scattertext('Topic Range', 'First range', 'Second range')
+                        
                 else:
                     st.write('You only have data in ', (MAX))
+
+            if html:
+                st.toast('Process completed', icon='🎉')
+                time.sleep(1)
+                st.toast('Visualizing', icon='⏳')
+                components.html(html, height = 1200, scrolling = True)
+    
+                st.download_button(
+                    "📥 Click to download result",
+                    disp_df,
+                    "scattertext_dataframe.csv",
+                    "text/csv",
+                    on_click="ignore")
     
         with tab2:
             st.markdown('**Jason Kessler. 2017. Scattertext: a Browser-Based Tool for Visualizing how Corpora Differ. In Proceedings of ACL 2017, System Demonstrations, pages 85–90, Vancouver, Canada. Association for Computational Linguistics.** https://doi.org/10.48550/arXiv.1703.00565')
     
         with tab3:
+            st.markdown('**Sánchez-Franco, M. J., & Rey-Tienda, S. (2023). The role of user-generated content in tourism decision-making: an exemplary study of Andalusia, Spain. Management Decision, 62(7).** https://doi.org/10.1108/md-06-2023-0966')
             st.markdown('**Marrone, M., & Linnenluecke, M.K. (2020). Interdisciplinary Research Maps: A new technique for visualizing research topics. PLoS ONE, 15.** https://doi.org/10.1371/journal.pone.0242283')
             st.markdown('**Moreno, A., & Iglesias, C.A. (2021). Understanding Customers’ Transport Services with Topic Clustering and Sentiment Analysis. Applied Sciences.** https://doi.org/10.3390/app112110169')
-            st.markdown('**Sánchez-Franco, M.J., & Rey-Tienda, S. (2023). The role of user-generated content in tourism decision-making: an exemplary study of Andalusia, Spain. Management Decision.** https://doi.org/10.1108/MD-06-2023-0966')
+            st.markdown('**Santosa, F. A. (2025). Artificial Intelligence in Library Studies: A Textual Analysis. JLIS.It, 16(1).** https://doi.org/10.36253/jlis.it-626')
 
         with tab4:
-            st.write("Click the :blue[Download SVG] on the right side.")
+            st.subheader(':blue[Image]', anchor=False)
+            st.write("Click the :blue[Download SVG] on the right side.")  
+            st.divider()
+            st.subheader(':blue[Scattertext Dataframe]', anchor=False)
+            st.button('📥 Click to download result')
+            st.text("Click the Download button to get the CSV result.")
 
+    except NameError:
+        pass
+    
     except Exception as e:
-        st.write(e)
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
