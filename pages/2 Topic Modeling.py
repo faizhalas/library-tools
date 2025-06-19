@@ -41,6 +41,8 @@ import os
 import time
 import json
 from tools import sourceformat as sf
+import datamapplot
+from sentence_transformers import SentenceTransformer
 
 #===config===
 st.set_page_config(
@@ -490,19 +492,24 @@ if uploaded_file is not None:
                     min_dist=0.0, metric='cosine', random_state=bert_random_state)   
                 cluster_model = KMeans(n_clusters=num_topic)
                 if bert_embedding_model == 'all-MiniLM-L6-v2':
-                    emb_mod = 'all-MiniLM-L6-v2'
+                    model = SentenceTransformer('all-MiniLM-L6-v2')
                     lang = 'en'
+                    embeddings = model.encode(topic_abs, show_progress_bar=True)
+                    
                 elif bert_embedding_model == 'en_core_web_sm':
-                    emb_mod = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
+                    nlp = en_core_web_sm.load(exclude=['tagger', 'parser', 'ner', 'attribute_ruler', 'lemmatizer'])
                     lang = 'en'
+                    embeddings = np.array([nlp(text).vector for text in topic_abs])
+                    
                 elif bert_embedding_model == 'paraphrase-multilingual-MiniLM-L12-v2':
-                    emb_mod = 'paraphrase-multilingual-MiniLM-L12-v2'
+                    model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
                     lang = 'multilingual'
+                    embeddings = model.encode(topic_abs, show_progress_bar=True)
 
                 vectorizer_model = CountVectorizer(ngram_range=(1, xgram), stop_words='english')
-                topic_model = BERTopic(embedding_model=emb_mod, hdbscan_model=cluster_model, language=lang, umap_model=umap_model, vectorizer_model=vectorizer_model, top_n_words=bert_top_n_words)
-                topics, probs = topic_model.fit_transform(topic_abs)
-                return topic_model, topics, probs
+                topic_model = BERTopic(embedding_model=None, hdbscan_model=cluster_model, language=lang, umap_model=umap_model, vectorizer_model=vectorizer_model, top_n_words=bert_top_n_words)
+                topics, probs = topic_model.fit_transform(topic_abs, embeddings=embeddings)
+                return topic_model, topics, probs, embeddings
             
             @st.cache_data(ttl=3600, show_spinner=False)
             def Vis_Topics(extype):
@@ -511,7 +518,7 @@ if uploaded_file is not None:
             
             @st.cache_data(ttl=3600, show_spinner=False)
             def Vis_Documents(extype):
-                fig2 = topic_model.visualize_documents(topic_abs)
+                fig2 = topic_model.visualize_document_datamap(topic_abs, embeddings=embeddings)
                 return fig2
     
             @st.cache_data(ttl=3600, show_spinner=False)
@@ -535,7 +542,7 @@ if uploaded_file is not None:
                 try:
                     with st.spinner('Performing computations. Please wait ...'):
                    
-                        topic_model, topics, probs = bertopic_vis(extype)
+                        topic_model, topics, probs, embeddings = bertopic_vis(extype)
                         time.sleep(.5)
                         st.toast('Visualize Topics', icon='🏃')
                         fig1 = Vis_Topics(extype)
@@ -556,16 +563,19 @@ if uploaded_file is not None:
                         st.toast('Visualize Terms', icon='🏃')
                         fig5 = Vis_Barchart(extype)
                        
-                        with st.expander("Visualize Topics"):
-                            st.write(fig1)
-                        with st.expander("Visualize Terms"):
-                            st.write(fig5)
-                        with st.expander("Visualize Documents"):
-                            st.write(fig2)
-                        with st.expander("Visualize Document Hierarchy"):  
-                            st.write(fig3)
-                        with st.expander("Visualize Topic Similarity"):
-                            st.write(fig4)
+                        bertab1, bertab2, bertab3, bertab4, bertab5 = st.tabs(["Visualize Topics", "Visualize Terms", "Visualize Documents",
+                                                                              "Visualize Document Hierarchy", "Visualize Topic Similarity"])
+                        
+                        with bertab1:
+                            st.plotly_chart(fig1, use_container_width=True)
+                        with bertab2:
+                            st.plotly_chart(fig5, use_container_width=True)
+                        with bertab3:
+                            st.plotly_chart(fig2, use_container_width=True)
+                        with bertab4:  
+                            st.plotly_chart(fig3, use_container_width=True)
+                        with bertab5:
+                            st.plotly_chart(fig4, use_container_width=True)
                       
                         #===download results===#
                         results = topic_model.get_topic_info()

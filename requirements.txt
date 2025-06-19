@@ -16,7 +16,7 @@ streamlit-agraph
 umap-learn
 wordcloud
 mlxtend==0.23.1
-bertopic
+bertopic==0.16.4
 ipywidgets==7.6.6
 bitermplus
 tmplot
@@ -35,3 +35,4 @@ pymarc
 textblob
 vaderSentiment
 git+https://github.com/faizhalas/shifterator
+datamapplot==0.4.2
