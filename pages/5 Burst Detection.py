@@ -17,6 +17,8 @@ import plotly.io as pio
 import sys
 import json
 from tools import sourceformat as sf
+
+
 #===config===
 st.set_page_config(
     page_title="Coconut",
@@ -44,6 +46,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
+    st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
 
 st.header("Burst Detection", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -53,7 +56,7 @@ def reset_all():
     st.cache_data.clear()
 
 # Initialize NLP model
-nlp = spacy.load("en_core_web_md")
+nlp = spacy.load("en_core_web_sm")
 
 @st.cache_data(ttl=3600)
 def upload(extype):
@@ -103,8 +106,6 @@ def conv_txt(extype):
         papers.rename(columns=col_dict, inplace=True)
     print(papers)
     return papers
-
-
 
 def conv_json(extype):
     col_dict={'title': 'title',
@@ -180,23 +181,29 @@ def clean_data(df):
     
     # Preprocess text
     df['processed'] = df.apply(lambda row: preprocess_text(f"{row.get(col_name, '')}"), axis=1)
+
+    ngram_range = (1, xgram)
     
     # Vectorize processed text
     if count_method == "Document Frequency":
-        vectorizer = CountVectorizer(lowercase=False, tokenizer=lambda x: x.split(), binary=True)
+        vectorizer = CountVectorizer(lowercase=False, tokenizer=lambda x: x.split(), binary=True, ngram_range=ngram_range)
     else:
-        vectorizer = CountVectorizer(lowercase=False, tokenizer=lambda x: x.split())
+        vectorizer = CountVectorizer(lowercase=False, tokenizer=lambda x: x.split(), ngram_range=ngram_range)
     X = vectorizer.fit_transform(df['processed'].tolist())
     
     # Create DataFrame from the Document-Term Matrix (DTM)
     dtm = pd.DataFrame(X.toarray(), columns=vectorizer.get_feature_names_out(), index=df['Year'].values)
     yearly_term_frequency = dtm.groupby(dtm.index).sum()
 
-    # User inputs for top words analysis and exclusions
-    excluded_words = [word.strip() for word in excluded_words_input.split(',')]
+    # excluded & included words
+    if exc_inc == "Words to exclude":
+        excluded_words = [word.strip() for word in words_input.split(',')]
+        filtered_words = [word for word in yearly_term_frequency.columns if word not in excluded_words]
     
-    # Identify top words, excluding specified words
-    filtered_words = [word for word in yearly_term_frequency.columns if word not in excluded_words]
+    elif exc_inc == "Focus on these words":
+        included_words = [word.strip() for word in words_input.split(',')]   
+        filtered_words = [word for word in yearly_term_frequency.columns if word in included_words]
+
     top_words = yearly_term_frequency[filtered_words].sum().nlargest(top_n).index.tolist()
     
     return yearly_term_frequency, top_words
@@ -252,27 +259,38 @@ def convert_df(df):
     return df.to_csv().encode("utf-8")
 
 @st.cache_data(ttl=3600)
-def scattervis(bursts, freq_data):
-    freq_data.reset_index(inplace=True)
+def scattervis(bursts, freq_data, top_n):
+    freq_data = freq_data.reset_index()
     freq_data.rename(columns={"index": "Year"}, inplace=True)
-                        
+    
     freq_data_melted = freq_data.melt(id_vars=["Year"], var_name="Category", value_name="Value")
     freq_data_melted = freq_data_melted[freq_data_melted["Value"] > 0]
-    wordlist = freq_data_melted["Category"].unique()
     
+    wordlist = freq_data_melted["Category"].unique()
     years = freq_data["Year"].tolist()
+    
     bursts["begin"] = bursts["begin"].apply(lambda x: years[min(x, len(years) - 1)] if x < len(years) else None)
     bursts["end"] = bursts["end"].apply(lambda x: years[min(x, len(years) - 1)] if x < len(years) else None)
+
     burst_points = []
-    
     for _, row in bursts.iterrows():
         for year in range(row["begin"], row["end"] + 1):
             burst_points.append((year, row["label"], row["weight"]))
-                    
     burst_points_df = pd.DataFrame(burst_points, columns=["Year", "Category", "Weight"])
-                    
+
+    min_year = min(years)
+    max_year = max(years)
+    n_years = max_year - min_year + 1
+    n_labels = len(wordlist)
+
+    label_spacing = 50   
+    year_spacing = 60    
+
+    plot_height = n_labels * label_spacing + 100
+    plot_width = n_years * year_spacing + 150
+
     fig = go.Figure()
-    
+
     # scatter trace for burst points
     fig.add_trace(go.Scatter(
         x=burst_points_df["Year"],
@@ -280,14 +298,15 @@ def scattervis(bursts, freq_data):
         mode='markers',
         marker=dict(
             symbol='square',
-            size=40,  
+            size=40,
             color='red',
-            opacity=0.5),
+            opacity=0.5
+        ),
         hoverinfo='text',
         text=burst_points_df["Weight"],
         showlegend=False
     ))
-                    
+
     # scatter trace for freq_data
     fig.add_trace(go.Scatter(
         x=freq_data_melted["Year"],
@@ -298,26 +317,43 @@ def scattervis(bursts, freq_data):
             size=30,
             color=freq_data_melted["Value"],
             colorscale='Blues',
-            showscale=False),
+            showscale=False
+        ),
         text=freq_data_melted["Value"],
         textposition="middle center",
         textfont=dict(
             size=16,
-            color=['white' if value > freq_data_melted["Value"].max()/2 else 'black' for value in freq_data_melted["Value"]])
+            color=['white' if value > freq_data_melted["Value"].max()/2 else 'black'
+                   for value in freq_data_melted["Value"]]
+        )
     ))
-    
-    min_year = min(years)
-    max_year = max(years)
-                    
+
+    # Layout
     fig.update_layout(
-        xaxis=dict(tickmode='linear', dtick=1, range=[(min_year-1), (max_year+1)], tickfont = dict(size=16), automargin=True, showgrid=False, zeroline=False),
-        yaxis=dict(tickvals=wordlist, ticktext=wordlist, tickmode='array', tickfont = dict(size=16), automargin=True, showgrid=False, zeroline=False),
-        plot_bgcolor='white',  
-        paper_bgcolor='white',  
+        xaxis=dict(
+            tickmode='linear',
+            dtick=1,
+            range=[min_year - 1, max_year + 1],
+            tickfont=dict(size=16),
+            automargin=True,
+            showgrid=False,
+            zeroline=False
+        ),
+        yaxis=dict(
+            tickvals=wordlist,
+            ticktext=wordlist,
+            tickmode='array',
+            tickfont=dict(size=16),
+            automargin=True,
+            showgrid=False,
+            zeroline=False
+        ),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
         showlegend=False,
-        margin=dict(l=1, r=1, t=1, b=1),
-        height=top_n*50+2,
-        width=(max_year-min_year)*52+100,
+        margin=dict(l=20, r=20, t=20, b=20),
+        height=plot_height,
+        width=plot_width,
         autosize=False
     )
                     
@@ -400,20 +436,25 @@ uploaded_file = st.file_uploader('', type=['csv', 'txt','json','tar.gz','xml'], 
 
 if uploaded_file is not None:
     try:
-        c1, c2, c3, c4 = st.columns([2,2,3,3])
+        c1, c2, c3 = st.columns([3,3,4])
         top_n = c1.number_input("Number of top words to analyze", min_value=5, value=10, step=1, on_change=reset_all)
         viz_selected = c2.selectbox("Option for visualization",
             ("Line graph", "Scatter plot"), on_change=reset_all)
         running_total = c3.selectbox("Calculation method",
             ("Running total", "By occurrences each year"), on_change=reset_all)
-        count_method = c4.selectbox("Count by",
+        count_method = c1.selectbox("Count by",
             ("Term Frequency", "Document Frequency"), on_change=reset_all)
 
-        d1, d2 = st.columns([2,8])
         df, coldf, MIN, MAX, GAP = load_data(uploaded_file)
-        col_name = d1.selectbox("Select column to analyze",
+        col_name = c2.selectbox("Select column to analyze",
             (coldf), on_change=reset_all)
-        excluded_words_input = d2.text_input("Words to exclude (comma-separated)", on_change=reset_all)
+        xgram = c3.selectbox("N-grams", ("1", "2", "3"), on_change=reset_all)
+        xgram = int(xgram)
+
+        st.divider()
+        d1, d2 = st.columns([3,7])
+        exc_inc = d1.radio("Select to exclude or focus on specific words", ["Words to exclude","Focus on these words"], horizontal=True, on_change=reset_all)
+        words_input = d2.text_input("Words to exclude or focus on (comma-separated)", on_change=reset_all)
 
         if (GAP != 0):
             YEAR = st.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_all)
@@ -441,7 +482,7 @@ if uploaded_file is not None:
                     linegraph(bursts, freq_data)
                     
                 elif viz_selected =="Scatter plot":
-                    scattervis(bursts, freq_data)
+                    scattervis(bursts, freq_data, top_n)
                 
                 csv1, csv2 = download_result(freq_data, bursts)
                 e1, e2, e3 = st.columns(3)
@@ -471,11 +512,23 @@ if uploaded_file is not None:
             st.markdown('**Li, M., Zheng, Z., & Yi, Q. (2024). The landscape of hot topics and research frontiers in Kawasaki disease: scientometric analysis. Heliyon, 10(8), e29680–e29680.** https://doi.org/10.1016/j.heliyon.2024.e29680')
             st.markdown('**Domicián Máté, Ni Made Estiyanti and Novotny, A. (2024) ‘How to support innovative small firms? Bibliometric analysis and visualization of start-up incubation’, Journal of Innovation and Entrepreneurship, 13(1).** https://doi.org/10.1186/s13731-024-00361-z')
             st.markdown('**Lamba, M., Madhusudhan, M. (2022). Burst Detection. In: Text Mining for Information Professionals. Springer, Cham.** https://doi.org/10.1007/978-3-030-85085-2_6')
+            st.markdown('**Santosa, F. A. (2025). Artificial Intelligence in Library Studies: A Textual Analysis. JLIS.It, 16(1).** https://doi.org/10.36253/jlis.it-626')
         
         with tab4:
-            st.text("Download results/images buttons located below visualizations")
-            
+            st.subheader(':blue[Burst Detection]', anchor=False)
+            st.button('📊 Download high resolution image', on_click=None)
+            st.text("Click download button.") 
 
-    except:
-        st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
+            st.divider()
+            st.subheader(':blue[Top words]', anchor=False)
+            st.button('👉 Press to download list of top words', on_click=None)
+            st.text("Click download button.")  
+
+            st.divider()
+            st.subheader(':blue[Burst]', anchor=False)
+            st.button('👉 Press to download the list of detected bursts', on_click=None)
+            st.text("Click download button.")
+            
+    except Exception as e:
+        st.error("Please ensure that your file or settings are correct. If you think there is a mistake, feel free to reach out to us!", icon="🚨")
         st.stop()
