@@ -28,7 +28,7 @@ mt1, mt2 = st.tabs(["Menu", "How to"])
 
 with mt1:   
 
-    st.header("Analysis",divider=True)
+    st.header("Analysis", divider=True, anchor=False)
 
     col1,col2, col3, col4 = st.columns(4)
 
@@ -53,7 +53,7 @@ with mt1:
         if st.button("Go to Sentiment Analysis"):
             st.switch_page("pages/7 Sentiment Analysis.py")
     
-    st.header("Visualizations",divider=True)
+    st.header("Visualizations", divider=True, anchor=False)
 
     col21, col22, col23 = st.columns(3)
     with col21.container(border=True):
