@@ -46,6 +46,7 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
+    st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
 
 st.header("Sentiment Analysis", anchor=False)
 st.subheader('Put your file here...', anchor=False)
