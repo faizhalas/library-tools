@@ -363,8 +363,9 @@ if uploaded_file is not None:
                     'Choose column',
                     (df_col_sel), on_change=reset_all)
         
-                list_words = paper[column_selected].values.tolist()
-                list_unique = sorted(list(set(list_words)))
+                list_words = paper[column_selected].dropna()  # remove NaN
+                list_words = [w for w in list_words if str(w).strip() != ""]  # remove empty strings
+                list_unique = sorted(set(list_words))
                 
                 if column_selected is not None:
                     label1 = col2.selectbox(
@@ -446,7 +447,7 @@ if uploaded_file is not None:
             st.write("Click the :blue[Download SVG] on the right side.")  
             st.divider()
             st.subheader(':blue[Scattertext Dataframe]', anchor=False)
-            st.button('📥 Click to download result')
+            st.button('📥 Click to download result', on_click="ignore")
             st.text("Click the Download button to get the CSV result.")
 
     except NameError:
