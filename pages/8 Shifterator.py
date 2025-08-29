@@ -397,8 +397,9 @@ if uploaded_file is not None:
                     'Choose column',
                     (df_col_sel), on_change=reset_all)
         
-                list_words = paper[column_selected].values.tolist()
-                list_unique = sorted(list(set(list_words)))
+                list_words = paper[column_selected].dropna()  # remove NaN
+                list_words = [w for w in list_words if str(w).strip() != ""]  # remove empty strings
+                list_unique = sorted(set(list_words))
                 
                 if column_selected is not None:
                     label1 = col2.selectbox(
@@ -511,13 +512,13 @@ if uploaded_file is not None:
 
         with tab4:
             st.subheader(':blue[Result]', anchor=False)
-            st.button('📥 Download Graph')
+            st.button('📥 Download Graph', on_click="ignore")
             st.text("Click Download Graph button.")  
 
             st.divider()
             st.subheader(':blue[Shifterator Dataframe]', anchor=False)
-            st.button('📥 Click to download result')
-            st.text("Click the Download button to get the CSV result.") 
+            st.button('📥 Press to download result', on_click="ignore")
+            st.text("Click the Download button to get the CSV result.")
 
     except Exception as e:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
