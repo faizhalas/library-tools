@@ -357,74 +357,110 @@ def scattervis(bursts, freq_data, top_n):
         autosize=False
     )
                     
-    fig.write_image("scatter_plot.png")
-    st.image("scatter_plot.png")
-    pio.write_image(fig, 'result.png', scale=4)  
+    fig.write_image("scatter_plot.png", width=plot_width, height=plot_height)
+    st.image("scatter_plot.png", use_column_width=False)
+        
+    pio.write_image(fig, 'result.png', width=plot_width, height=plot_height, scale=4)  
 
 @st.cache_data(ttl=3600)
-def linegraph(bursts, freq_data):
-    fig = make_subplots(rows=num_rows, cols=2, subplot_titles=freq_data.columns[:top_n])
-    
+@st.cache_data(ttl=3600)
+def linegraph(bursts, freq_data, top_n, running_total=""):
+    num_rows = (top_n + 1) // 2   # 2 columns layout
+
+    # --- X spacing: each year gets a slot of width 10 (=> ±5 padding) ---
+    years = list(freq_data.index)
+    spacing = 100
+    padding = 200
+    x_positions = np.arange(len(years)) * spacing      # 0,10,20,...
+    tickvals = x_positions
+    ticktext = [str(y) for y in years]
+
+    fig = make_subplots(
+        rows=num_rows,
+        cols=2,
+        subplot_titles=freq_data.columns[:top_n]
+    )
+
     row, col = 1, 1
     for i, column in enumerate(freq_data.columns[:top_n]):
+        # main line (x mapped to spaced positions)
         fig.add_trace(go.Scatter(
-            x=freq_data.index, y=freq_data[column], mode='lines+markers+text', name=column,
+            x=x_positions,
+            y=freq_data[column].to_numpy(),
+            mode='lines+markers+text',
+            name=column,
             line_shape='linear',
             hoverinfo='text',
-            hovertext=[f"Year: {index}<br>Frequency: {freq}" for index, freq in zip(freq_data.index, freq_data[column])],
+            hovertext=[f"Year: {yr}<br>Frequency: {freq}"
+                       for yr, freq in zip(years, freq_data[column])],
             text=freq_data[column],
             textposition='top center'
         ), row=row, col=col)
-                
-        # Add area charts
+
+        # bursts shading + annotation
         for _, row_data in bursts[bursts['label'] == column].iterrows():
-            x_values = freq_data.index[row_data['begin']:row_data['end']+1]
-            y_values = freq_data[column][row_data['begin']:row_data['end']+1]
-                        
-            #middle_y = sum(y_values) / len(y_values)
-            y_post = min(freq_data[column]) + 1 if running_total == "Running total" else sum(y_values) / len(y_values)
-            x_offset = 0.1
-                        
-            # Add area chart
+            # slice by positional indices (begin/end are positions)
+            x_vals = x_positions[row_data['begin']:row_data['end'] + 1]
+            y_vals = freq_data[column].iloc[row_data['begin']:row_data['end'] + 1].to_numpy()
+
+            # area under the line during burst
             fig.add_trace(go.Scatter(
-                x=x_values,
-                y=y_values,
-                fill='tozeroy', mode='lines', fillcolor='rgba(0,100,80,0.2)',
+                x=x_vals,
+                y=y_vals,
+                fill='tozeroy',
+                mode='lines',
+                fillcolor='rgba(0,100,80,0.2)',
+                line=dict(width=0)  # keep it as a filled area
             ), row=row, col=col)
-    
+
+            # weight label near the bottom
+            y_post = float(np.nanmin(freq_data[column])) * 0.95
+            x_offset = 0.5  # small shift within the 10-wide slot
+
             align_value = "left" if running_total == "Running total" else "center"
             valign_value = "bottom" if running_total == "Running total" else "middle"
-                                            
-            # Add annotation for weight at the bottom
+
             fig.add_annotation(
-                x=x_values[0] + x_offset,
+                x=x_vals[0] + x_offset,
                 y=y_post,
                 text=f"Weight: {row_data['weight']:.2f}",
                 showarrow=False,
-                font=dict(
-                    color="black",
-                    size=12),
+                font=dict(color="black", size=12),
                 align=align_value,
                 valign=valign_value,
                 textangle=270,
                 row=row, col=col
-                )
-                
+            )
+
         col += 1
         if col > 2:
             col = 1
             row += 1
-                
+
+    # Dynamic sizing
+    plot_height = num_rows * 500
+    plot_width = len(years) * spacing + padding
+
+    # Apply the same x settings to all subplots:
+    fig.update_xaxes(
+        range=[-spacing/2, x_positions[-1] + spacing/2],  # ±5 around the ends
+        tickmode='array',
+        tickvals=tickvals,
+        ticktext=ticktext
+    )
+
     fig.update_layout(
         showlegend=False,
         margin=dict(l=20, r=20, t=100, b=20),
-        height=num_rows * 500,
-        width=1500
+        height=plot_height,
+        width=plot_width,
+        autosize=False
     )
                 
-    fig.write_image("line_graph.png")
-    st.image("line_graph.png")
-    pio.write_image(fig, 'result.png', scale=4)
+    fig.write_image("line_graph.png", width=plot_width, height=plot_height)
+    
+    st.image("line_graph.png", use_column_width=False)
+    pio.write_image(fig, 'result.png', width=plot_width, height=plot_height, scale=4)
 
 @st.cache_data(ttl=3600)
 def download_result(freq_data, bursts):
@@ -479,7 +515,7 @@ if uploaded_file is not None:
                     st.info(f'We only detect a burst on {num_unique_labels} word(s), which is {top_n - num_unique_labels} fewer than the top word(s)', icon="ℹ️")
 
                 if viz_selected == "Line graph": 
-                    linegraph(bursts, freq_data)
+                    linegraph(bursts, freq_data, top_n)
                     
                 elif viz_selected =="Scatter plot":
                     scattervis(bursts, freq_data, top_n)
