@@ -263,7 +263,7 @@ if uploaded_file is not None:
                 st.error('Please lower your value.', icon="🚨")
             else:
                 restab = arm_table(extype)
-                restab = st.data_editor(restab, use_container_width=True)
+                restab = st.data_editor(restab, use_container_width=True, hide_index=True)
                 res = restab[restab['Show'] == True] 
                        
                  #===visualize===
@@ -336,8 +336,9 @@ if uploaded_file is not None:
             st.markdown("![Downloading graph](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bidirected.jpg)")     
             st.subheader("Download table as CSV")
             st.text("Hover cursor over table, and click download arrow")
-            st.image("images/tablenetwork.png")
+            st.markdown("![Downloading table](https://raw.githubusercontent.com/faizhalas/library-tools/refs/heads/main/images/tablenetwork.png)")
             
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
+
