@@ -294,10 +294,16 @@ if uploaded_file is not None:
             st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Text Pre-Processing. Text Mining for Information Professionals, 79–103.** https://doi.org/10.1007/978-3-030-85085-2_3')
 
         with tab5:
-            st.text("Download keywords at bottom of table")
+            st.subheader(':blue[Result]', anchor=False)
+            st.button('Press to download result 👈')
+            st.text("Go to Result and click Download button.")  
+
             st.divider()
-            st.text("Download table")
-            st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/mainimages/downloadtable.png")
+            st.subheader(':blue[List of Keywords]', anchor=False)
+            st.button('Press to download keywords 👈')
+            st.text("Go to List of Keywords and click Download button.") 
+            
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()     
+
