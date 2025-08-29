@@ -133,7 +133,7 @@ def conv_json(extype):
     keywords.rename(columns=col_dict,inplace=True)
     return keywords
 
-@st.cache_resource(ttl=3600)
+@st.cache_data(ttl=3600)
 def conv_pub(extype):
     if (get_ext(extype)).endswith('.tar.gz'):
         bytedata = extype.read()
@@ -170,8 +170,8 @@ if uploaded_file is not None:
             'Choose method',[
             'TextBlob','NLTKvader']
         )
-        words_to_remove = c1.text_input("Remove specific words. Separate words by semicolons (;)")        
-        wordcount = c2.number_input(label = "Words displayed", min_value = 1, step = 1, value=5)-1
+        words_to_remove = c1.text_input("Remove specific words. Separate words by semicolons (;)", on_change=reset_all)        
+        wordcount = c2.number_input(label = "Words displayed", min_value = 1, step = 1, value=5, on_change=reset_all)-1
         rem_copyright = c1.toggle('Remove copyright statement', value=True, on_change=reset_all)
         rem_punc = c2.toggle('Remove punctuation', value=True, on_change=reset_all)
 
@@ -193,17 +193,23 @@ if uploaded_file is not None:
             paper[ColCho] = paper['Abstract_pre'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
               
             words_rmv = [word.strip() for word in words_to_remove.split(";")]
-            remove_dict = {word: None for word in words_rmv}
-            
-            @st.cache_resource(ttl=3600)
+
+            @st.cache_data(ttl=3600)
             def remove_words(text):
-                 words = text.split()
-                 cleaned_words = [word for word in words if word not in remove_dict]
-                 return ' '.join(cleaned_words) 
+                if not isinstance(text, str):
+                    return text  # skip NaN or non-string
+                
+                # Regex pattern: remove exact whole words in words_rmv
+                pattern = r'\b(?:' + "|".join(map(re.escape, words_rmv)) + r')\b'
+                cleaned_text = re.sub(pattern, '', text)
+                
+                # Remove double spaces created after removal
+                return " ".join(cleaned_text.split())
             
             paper['Sentences__'] = paper['Abstract_pre'].map(remove_words)
-
+            
             return paper
+            
         paper=clean_csv(extype) 
     
         if method == 'NLTKvader':
@@ -268,11 +274,11 @@ if uploaded_file is not None:
 
                 return phrase, phrasepolar, phrasesubject
 
-            @st.cache_resource(ttl=3600)
+            @st.cache_data(ttl=3600)
             def mergelist(data):
                 return ' '.join(data)
 
-            @st.cache_resource(ttl=3600)
+            @st.cache_data(ttl=3600)
             def assignscore(data):
                 if data>0:
                     return "Positive"
@@ -357,6 +363,7 @@ if uploaded_file is not None:
 
     
     except Exception as e:
-        st.write(e)
+   
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
+
