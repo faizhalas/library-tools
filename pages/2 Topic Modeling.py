@@ -164,7 +164,7 @@ def conv_json(extype):
     keywords.rename(columns=col_dict,inplace=True)
     return keywords
 
-@st.cache_resource(ttl=3600)
+@st.cache_data(ttl=3600)
 def conv_pub(extype):
     if (get_ext(extype)).endswith('.tar.gz'):
         bytedata = extype.read()
@@ -201,12 +201,12 @@ if uploaded_file is not None:
         num_cho = c3.number_input('Choose number of topics', min_value=2, max_value=30, value=5)
 
         d1, d2 = st.columns([3,7])
-        xgram = d1.selectbox("N-grams", ("1", "2", "3"))
+        xgram = d1.selectbox("N-grams", ("1", "2", "3"), on_change=reset_all)
         xgram = int(xgram)
-        words_to_remove = d2.text_input("Remove specific words. Separate words by semicolons (;)")
+        words_to_remove = d2.text_input("Remove specific words. Separate words by semicolons (;)", on_change=reset_all)
     
-        rem_copyright = d1.toggle('Remove copyright statement', value=True)
-        rem_punc = d2.toggle('Remove punctuation', value=True)
+        rem_copyright = d1.toggle('Remove copyright statement', value=True, on_change=reset_all)
+        rem_punc = d2.toggle('Remove punctuation', value=True, on_change=reset_all)
 
         #===advance settings===
         with st.expander("🧮 Show advance settings"): 
@@ -256,7 +256,7 @@ if uploaded_file is not None:
             #===lemmatize===
             lemmatizer = WordNetLemmatizer()
             
-            @st.cache_resource(ttl=3600)
+            @st.cache_data(ttl=3600)
             def lemmatize_words(text):
                 words = text.split()
                 words = [lemmatizer.lemmatize(word) for word in words]
@@ -266,7 +266,7 @@ if uploaded_file is not None:
             words_rmv = [word.strip() for word in words_to_remove.split(";")]
             remove_dict = {word: None for word in words_rmv}
             
-            @st.cache_resource(ttl=3600)
+            @st.cache_data(ttl=3600)
             def remove_words(text):
                  words = text.split()
                  cleaned_words = [word for word in words if word not in remove_dict]
@@ -610,9 +610,10 @@ if uploaded_file is not None:
                 st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_bertopic.jpg)")
                 st.divider()
                 st.subheader(':blue[Downloading CSV Results]', anchor=False)
-                st.button("Download Results")
+                st.button("Download Results", on_click="ignore")
                 st.text("Click Download results button at bottom of page")
 
     except Exception as e:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
+
