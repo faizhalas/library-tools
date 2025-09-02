@@ -210,27 +210,29 @@ if uploaded_file is not None:
 
         #===advance settings===
         with st.expander("🧮 Show advance settings"): 
-            t1, t2, t3 = st.columns([3,3,4])
+            t1, t2, t3, t4 = st.columns(4)
             if method == 'pyLDA':
-                py_random_state = t1.number_input('Random state', min_value=0, max_value=None, step=1)
-                py_chunksize = t2.number_input('Chunk size', value=100 , min_value=10, max_value=None, step=1)
-                opt_threshold = t3.number_input('Threshold', value=100 , min_value=1, max_value=None, step=1)
+                py_random_state = t1.number_input('Random state', min_value=0, max_value=None, step=1, help='Ensuring the reproducibility.')
+                py_chunksize = t2.number_input('Chunk size', value=100 , min_value=10, max_value=None, step=1, help='Number of documents to be used in each training chunk.')
+                opt_threshold = t3.number_input('Threshold (Gensim)', value=100 , min_value=1, max_value=None, step=1, help='Lower = More phrases. Higher = Fewer phrases.')
+                opt_relevance = t4.number_input('Lambda (λ)', value=0.6 , min_value=0.0, max_value=1.0, step=0.01, help='Lower = More unique. Higher = More frequent.')
+                
                 
             elif method == 'Biterm':
-                btm_seed = t1.number_input('Random state seed', value=100 , min_value=1, max_value=None, step=1)
-                btm_iterations = t2.number_input('Iterations number', value=20 , min_value=2, max_value=None, step=1)
-                opt_threshold = t3.number_input('Threshold', value=100 , min_value=1, max_value=None, step=1)
+                btm_seed = t1.number_input('Random state seed', value=100 , min_value=1, max_value=None, step=1, help='Ensuring the reproducibility.')
+                btm_iterations = t2.number_input('Iterations number', value=20 , min_value=2, max_value=None, step=1, help='Number of iterations the model fitting process has gone through.')
+                opt_threshold = t3.number_input('Threshold (Gensim)', value=100 , min_value=1, max_value=None, step=1, help='Lower = More phrases. Higher = Fewer phrases.')
                 
             elif method == 'BERTopic':
-                u1, u2 = st.columns([5,5])
+                #u1, u2 = st.columns([5,5])
                 
-                bert_top_n_words = u1.number_input('top_n_words', value=5 , min_value=5, max_value=25, step=1)
-                bert_random_state = u2.number_input('random_state', value=42 , min_value=1, max_value=None, step=1)
-                bert_n_components = u1.number_input('n_components', value=5 , min_value=1, max_value=None, step=1)
-                bert_n_neighbors = u2.number_input('n_neighbors', value=15 , min_value=1, max_value=None, step=1)
+                bert_top_n_words = t1.number_input('top_n_words', value=5 , min_value=5, max_value=25, step=1, help='Number of words per topic.')
+                bert_random_state = t2.number_input('random_state', value=42 , min_value=1, max_value=None, step=1, help="Please be aware we currently can't do the reproducibility on Bertopic.")
+                bert_n_components = t3.number_input('n_components', value=5 , min_value=1, max_value=None, step=1, help='The dimensionality of the embeddings after reducing them.')
+                bert_n_neighbors = t4.number_input('n_neighbors', value=15 , min_value=1, max_value=None, step=1, help='The number of neighboring sample points used when making the manifold approximation.')
                 bert_embedding_model = st.radio(
                     "embedding_model", 
-                    ["all-MiniLM-L6-v2", "paraphrase-multilingual-MiniLM-L12-v2", "en_core_web_sm"], index=0, horizontal=True)
+                    ["all-MiniLM-L6-v2", "paraphrase-multilingual-MiniLM-L12-v2", "en_core_web_sm"], index=0, horizontal=True, help= 'Select paraphrase-multilingual if your documents are in a language other than English or are multilingual.')
             else:
                 st.write('Please choose your preferred method')
         
@@ -313,6 +315,7 @@ if uploaded_file is not None:
                                 random_state=py_random_state,
                                 chunksize=py_chunksize,
                                 alpha='auto',
+                                gamma_threshold=opt_relevance,
                                 per_word_topics=False)
                     pprint(lda_model.print_topics())
                     doc_lda = lda_model[corpus]
@@ -616,4 +619,3 @@ if uploaded_file is not None:
     except Exception as e:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
-
