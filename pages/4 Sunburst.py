@@ -4,7 +4,6 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import sys
-import json
 from tools import sourceformat as sf
 
 
@@ -35,7 +34,6 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/5 Burst Detection.py", label="Burst Detection", icon="5️⃣")
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
-    st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
     
 st.header("Sunburst Visualization", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -69,18 +67,9 @@ def upload(extype):
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
+    if "pmc" in uploaded_file.name.lower():
         file = uploaded_file
         papers = sf.medline(file)
-
-    elif("hathi" in uploaded_file.name.lower()):
-        papers = pd.read_csv(uploaded_file,sep = '\t')
-        papers = sf.htrc(papers)
-        col_dict={'title': 'title',
-        'rights_date_used': 'Year',
-        }
-        papers.rename(columns=col_dict, inplace=True)
-        papers['Cited by'] = papers.groupby(['Keywords'])['Keywords'].transform('size')
     else:
         col_dict = {'TI': 'Title',
                 'SO': 'Source title',
@@ -95,6 +84,7 @@ def conv_txt(extype):
     print(papers)
     return papers
 
+
 @st.cache_data(ttl=3600)
 def conv_json(extype):
     col_dict={'title': 'title',
@@ -102,11 +92,7 @@ def conv_json(extype):
     'content_provider_code': 'Document Type',
     'Keywords':'Source title'
     }
-
-    data = json.load(uploaded_file)
-    hathifile = data['gathers']
-    keywords = pd.DataFrame.from_records(hathifile)
-
+    keywords = pd.read_json(uploaded_file)
     keywords = sf.htrc(keywords)
     keywords['Cited by'] = keywords.groupby(['Keywords'])['Keywords'].transform('size')
     keywords.rename(columns=col_dict,inplace=True)
@@ -147,58 +133,63 @@ if uploaded_file is not None:
             MIN1 = int(papers['Cited by'].min())
             MAX1 = int(papers['Cited by'].max())
             GAP = MAX - MIN
-            return papers, MIN, MAX, GAP, MIN1, MAX1
+            unique_stitle = set()
+            unique_stitle.update(papers['Source title'].dropna())
+            list_stitle = sorted(list(unique_stitle))
+            return papers, MIN, MAX, GAP, MIN1, MAX1, list_stitle
 
         tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📓 Recommended Reading", "⬇️ Download Help"])
         
         with tab1:    
             #===sunburst===
             try:
-                papers, MIN, MAX, GAP, MIN1, MAX1 = get_minmax(extype)
+                papers, MIN, MAX, GAP, MIN1, MAX1, list_stitle = get_minmax(extype)
             except KeyError:
                 st.error('Error: Please check again your columns.')
                 sys.exit(1)
+
+            stitle = st.selectbox('Focus on', (list_stitle), index=None, on_change=reset_all)
             
             if (GAP != 0):
-                YEAR = st.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_all)
-                KEYLIM = st.slider('Cited By Count',min_value = MIN1, max_value = MAX1, value = (MIN1,MAX1), on_change=reset_all)
+                col1, col2 = st.columns(2)
+                YEAR = col1.slider('Year', min_value=MIN, max_value=MAX, value=(MIN, MAX), on_change=reset_all)
+                KEYLIM = col2.slider('Cited By Count',min_value = MIN1, max_value = MAX1, value = (MIN1,MAX1), on_change=reset_all)
             else:
-                st.write('You only have data in ', (MAX))
+                col1.write('You only have data in ', (MAX))
                 YEAR = (MIN, MAX)
-                KEYLIM = (MIN1,MAX1)
+                KEYLIM = col2.slider('Cited By Count',min_value = MIN1, max_value = MAX1, value = (MIN1,MAX1), on_change=reset_all)
+                
             @st.cache_data(ttl=3600)
             def listyear(extype):
                 global papers
                 years = list(range(YEAR[0],YEAR[1]+1))
                 cited = list(range(KEYLIM[0],KEYLIM[1]+1))
+                if stitle:
+                    papers = papers[papers['Source title'].str.contains(stitle, case=False, na=False)]
                 papers = papers.loc[papers['Year'].isin(years)]
                 papers = papers.loc[papers['Cited by'].isin(cited)]
+                papers['Cited by'] = papers['Cited by'].fillna(0)
                 return years, papers
             
             @st.cache_data(ttl=3600)
             def vis_sunbrust(extype):
-                papers['Cited by'] = papers['Cited by'].fillna(0)
                 vis = pd.DataFrame()
                 vis[['doctype','source','citby','year']] = papers[['Document Type','Source title','Cited by','Year']]
                 viz=vis.groupby(['doctype', 'source', 'year'])['citby'].agg(['sum','count']).reset_index()  
                 viz.rename(columns={'sum': 'cited by', 'count': 'total docs'}, inplace=True)
-
-
-
+                                
                 fig = px.sunburst(viz, path=['doctype', 'source', 'year'], values='total docs',
                               color='cited by', 
                               color_continuous_scale='RdBu',
                               color_continuous_midpoint=np.average(viz['cited by'], weights=viz['total docs']))
                 fig.update_layout(height=800, width=1200)
-                return fig, viz
+                return fig
             
             years, papers = listyear(extype)
     
             if {'Document Type','Source title','Cited by','Year'}.issubset(papers.columns):
-                fig, viz = vis_sunbrust(extype)
+                fig = vis_sunbrust(extype)
                 st.plotly_chart(fig, height=800, width=1200) #use_container_width=True)
-                
-                st.dataframe(viz)
                
             else:
                 st.error('We require these columns: Document Type, Source title, Cited by, Year', icon="🚨")
