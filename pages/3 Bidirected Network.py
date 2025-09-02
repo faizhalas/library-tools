@@ -220,16 +220,16 @@ if uploaded_file is not None:
         col1, col2, col3 = st.columns(3)
         with col1:
             supp = st.slider(
-                'Select value of Support',
-                0.001, 1.000, (0.010), on_change=reset_all)
+                'Support',
+                0.001, 1.000, (0.010), on_change=reset_all, help='Frequency of occurrence of keywords in a set of documents')
         with col2:
             conf = st.slider(
-                'Select value of Confidence',
-                0.001, 1.000, (0.050), on_change=reset_all)
+                'Confidence',
+                0.001, 1.000, (0.050), on_change=reset_all, help='Presence of keywords in documents that included the antecedents')
         with col3:
             maxlen = st.slider(
                 'Maximum length of the itemsets generated',
-                2, 8, (2), on_change=reset_all)
+                2, 8, (2), on_change=reset_all, help='')
     
         tab1, tab2, tab3, tab4 = st.tabs(["📈 Result & Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
         
@@ -341,4 +341,3 @@ if uploaded_file is not None:
     except:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
-
