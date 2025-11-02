@@ -41,7 +41,57 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
-    
+    st.page_link("pages/9 WordCloud.py", label = "WordCloud", icon = "9️⃣")
+
+with st.expander("Before you start", expanded = True):
+            
+        tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download"])
+        with tab1:
+            st.write("Scattertext is an open-source tool designed to visualize linguistic variations between document categories in a language-independent way. It presents a scatterplot, with each axis representing the rank-frequency of a term's occurrence within a category of documents.") 
+            st.divider()
+            st.write('💡 The idea came from this:') 
+            st.write('Kessler, J. S. (2017). Scattertext: a Browser-Based Tool for Visualizing how Corpora Differ. https://doi.org/10.48550/arXiv.1703.00565')
+                
+        with tab2:
+            st.text("1. Put your file. Choose your preferred column to analyze.")
+            st.text("2. Choose your preferred method to compare and decide words you want to remove.")
+            st.text("3. Finally, you can visualize your data.")
+            st.error("This app includes lemmatization and stopwords. Currently, we only offer English words.", icon="💬")
+            
+        with tab3:
+            st.code("""
+            +----------------+------------------------+----------------------------------+
+            |     Source     |       File Type        |              Column              |
+            +----------------+------------------------+----------------------------------+
+            | Scopus         | Comma-separated values | Choose your preferred column     |
+            |                | (.csv)                 | that you have                    |
+            +----------------+------------------------|                                  |
+            | Web of Science | Tab delimited file     |                                  |
+            |                | (.txt)                 |                                  |
+            +----------------+------------------------|                                  |
+            | Lens.org       | Comma-separated values |                                  |
+            |                | (.csv)                 |                                  |
+            +----------------+------------------------|                                  |
+            | Dimensions     | Comma-separated values |                                  |
+            |                | (.csv)                 |                                  |
+            +----------------+------------------------|                                  |
+            | OpenAlex       | Comma-separated values |                                  |
+            |                | (.csv)                 |                                  |
+            +----------------+------------------------|                                  |
+            | Other          | .csv .xls .xlsx        |                                  |
+            +----------------+------------------------|                                  |
+            | Hathitrust     | .json                  |                                  |
+            +----------------+------------------------+----------------------------------+
+            """, language=None)
+            
+        with tab4:
+            st.subheader(':blue[Image]', anchor=False)
+            st.write("Click the :blue[Download SVG] on the right side.")  
+            st.divider()
+            st.subheader(':blue[Scattertext Dataframe]', anchor=False)
+            st.button('📥 Click to download result.', on_click=None)
+            st.text("Click the Download button to get the CSV result.")
+
 st.header("Scattertext", anchor=False)
 st.subheader('Put your file here...', anchor=False)
 
@@ -62,7 +112,7 @@ def upload(extype):
                papers.rename(columns={'Publication Year': 'Year', 'Citing Works Count': 'Cited by',
                                      'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
     
-    if "dimensions" in uploaded_file.name.lower():
+    elif "About the data" in papers.columns[0]:
         papers = sf.dim(papers)
         col_dict = {'MeSH terms': 'Keywords',
         'PubYear': 'Year',
@@ -70,34 +120,33 @@ def upload(extype):
         'Publication Type': 'Document Type'
         }
         papers.rename(columns=col_dict, inplace=True)
+
+    elif "ids.openalex" in papers.columns:
+        papers.rename(columns={'abstract': 'Abstract', 'title': 'Title'}, inplace=True)
     
     return papers
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
-        file = uploaded_file
-        papers = sf.medline(file)
-
-    elif("hathi" in uploaded_file.name.lower()):
-        papers = pd.read_csv(uploaded_file,sep = '\t')
+    if("PMID" in (uploaded_file.read()).decode()):
+        uploaded_file.seek(0)
+        papers = sf.medline(uploaded_file)
+        print(papers)
+        return papers
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DE': 'Author Keywords',
+            'DT': 'Document Type',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',
+            'ID': 'Keywords Plus',
+            'rights_date_used': 'Year'}
+    uploaded_file.seek(0)
+    papers = pd.read_csv(uploaded_file, sep='\t')
+    if("htid" in papers.columns):
         papers = sf.htrc(papers)
-        col_dict={'title': 'title',
-        'rights_date_used': 'Year',
-        }
-        papers.rename(columns=col_dict, inplace=True)
-        
-    else:
-        col_dict = {'TI': 'Title',
-                'SO': 'Source title',
-                'DE': 'Author Keywords',
-                'DT': 'Document Type',
-                'AB': 'Abstract',
-                'TC': 'Cited by',
-                'PY': 'Year',
-                'ID': 'Keywords Plus'}
-        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-        papers.rename(columns=col_dict, inplace=True)
+    papers.rename(columns=col_dict, inplace=True)
     print(papers)
     return papers
 
@@ -124,6 +173,20 @@ def conv_pub(extype):
         bytedata = extype.read()
         keywords = sf.readxml(bytedata)
     return keywords
+
+@st.cache_data(ttl=3600)
+def readxls(file):
+    papers = pd.read_excel(uploaded_file, sheet_name=0, engine='openpyxl')
+    if "About the data" in papers.columns[0]:
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
+    
+    return papers
 
 @st.cache_data(ttl=3600)
 def get_data(extype): 
@@ -288,7 +351,7 @@ def df_years(first_range, second_range):
     return filtered_df 
 
 #===Read data===
-uploaded_file = st.file_uploader('', type=['csv', 'txt', 'json', 'tar.gz','xml'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt', 'json', 'tar.gz', 'xml', 'xls', 'xlsx'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
@@ -302,6 +365,8 @@ if uploaded_file is not None:
             papers = conv_json(extype)
         elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
             papers = conv_pub(uploaded_file)
+        elif extype.endswith(('.xls', '.xlsx')):
+            papers = readxls(uploaded_file)
     
         df_col, selected_cols = get_data(extype)
         comparison = check_comparison(extype)
@@ -330,7 +395,7 @@ if uploaded_file is not None:
         
         paper = clean_csv(extype)
     
-        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
+        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
     
         with tab1:
              #===visualization===
@@ -441,14 +506,6 @@ if uploaded_file is not None:
             st.markdown('**Marrone, M., & Linnenluecke, M.K. (2020). Interdisciplinary Research Maps: A new technique for visualizing research topics. PLoS ONE, 15.** https://doi.org/10.1371/journal.pone.0242283')
             st.markdown('**Moreno, A., & Iglesias, C.A. (2021). Understanding Customers’ Transport Services with Topic Clustering and Sentiment Analysis. Applied Sciences.** https://doi.org/10.3390/app112110169')
             st.markdown('**Santosa, F. A. (2025). Artificial Intelligence in Library Studies: A Textual Analysis. JLIS.It, 16(1).** https://doi.org/10.36253/jlis.it-626')
-
-        with tab4:
-            st.subheader(':blue[Image]', anchor=False)
-            st.write("Click the :blue[Download SVG] on the right side.")  
-            st.divider()
-            st.subheader(':blue[Scattertext Dataframe]', anchor=False)
-            st.button('📥 Click to download result', on_click="ignore")
-            st.text("Click the Download button to get the CSV result.")
 
     except NameError:
         pass
