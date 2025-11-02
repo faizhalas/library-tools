@@ -36,3 +36,11 @@ textblob
 vaderSentiment
 git+https://github.com/faizhalas/shifterator
 datamapplot==0.4.2
+altair-nx
+rouge_score
+pytextrank
+openai
+transformers
+accelerate
+sentencepiece
+openpyxl
