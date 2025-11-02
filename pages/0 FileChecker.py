@@ -44,34 +44,35 @@ def upload(extype):
         'Publication Type': 'Document Type'
         }
         keywords.rename(columns=col_dict, inplace=True)
+
+    elif "ids.openalex" in keywords.columns:
+        keywords.rename(columns={'keywords.display_name': 'Keywords', 'publication_year': 'Year', 
+                                 'cited_by_count': 'Cited by', 'type': 'Document Type', 
+                                 'primary_location.source.display_name': 'Source title'}, inplace=True)
+        
     return keywords
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
-        file = uploaded_file
-        papers = sf.medline(file)
-        
-    elif("hathi" in uploaded_file.name.lower()):
-        papers = pd.read_csv(uploaded_file,sep = '\t')
+    if("PMID" in (uploaded_file.read()).decode()):
+        uploaded_file.seek(0)
+        papers = sf.medline(uploaded_file)
+        print(papers)
+        return papers
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DE': 'Author Keywords',
+            'DT': 'Document Type',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',
+            'ID': 'Keywords Plus',
+            'rights_date_used': 'Year'}
+    uploaded_file.seek(0)
+    papers = pd.read_csv(uploaded_file, sep='\t')
+    if("htid" in papers.columns):
         papers = sf.htrc(papers)
-        col_dict={'title': 'title',
-        'rights_date_used': 'Year',
-        }
-        papers.rename(columns=col_dict, inplace=True) 
-
-    else:
-        col_dict = {'TI': 'Title',
-                'SO': 'Source title',
-                'DE': 'Author Keywords',
-                'DT': 'Document Type',
-                'AB': 'Abstract',
-                'TC': 'Cited by',
-                'PY': 'Year',
-                'ID': 'Keywords Plus'}
-        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-        
-        papers.rename(columns=col_dict, inplace=True)
+    papers.rename(columns=col_dict, inplace=True)
     print(papers)
     return papers
 
@@ -102,26 +103,38 @@ def conv_pub(extype):
         keywords = sf.readxml(bytedata)
     return keywords
 
+@st.cache_data(ttl=3600)
+def readxls(file):
+    papers = pd.read_excel(uploaded_file, sheet_name=0, engine='openpyxl')
+    if "About the data" in papers.columns[0]:
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
+    
+    return papers
+
 st.header('File Checker', anchor=False)
 st.subheader('Put your file here...', anchor=False)
 
 #===read data===
-uploaded_file = st.file_uploader('', type=['csv','txt','json', 'tar.gz', 'xml'], on_change=reset_data)
+uploaded_file = st.file_uploader('', type=['csv', 'txt', 'json', 'tar.gz', 'xml', 'xls', 'xlsx'], on_change=reset_data)
 
 if uploaded_file is not None:
     extype = get_ext(uploaded_file)
     if extype.endswith('.csv'):
         data = upload(extype) 
-                  
     elif extype.endswith('.txt'):
         data = conv_txt(extype)
-
     elif extype.endswith('.json'):
-        data = conv_json(extype)
-    
+        data = conv_json(extype) 
     elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
         data = conv_pub(uploaded_file)
-
+    elif extype.endswith(('.xls', '.xlsx')):
+        papers = readxls(uploaded_file)
 
     col1, col2, col3 = st.columns(3)
   
@@ -138,7 +151,7 @@ if uploaded_file is not None:
             container1.subheader('✔️ Keyword Stem', divider='blue', anchor=False)
             container1.write('Congratulations! You can use Keywords Stem')
 
-        #===Visualization===
+        #===Sunburst===
         if 'Publication Year' in data.columns:
                    data.rename(columns={'Publication Year': 'Year', 'Citing Works Count': 'Cited by',
                                          'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
@@ -153,9 +166,8 @@ if uploaded_file is not None:
         else:
             container2.subheader('❌ Sunburst', divider='red', anchor=False)
             miss_col_str = ', '.join(miss_col)
-            container2.write(f"Unfortunately, you don't have: {miss_col_str}. Please check again.")           
+            container2.write(f"Unfortunately, you don't have: {miss_col_str}. Please check again.")  
 
-    with col2:   
         #===check any obj===
         coldf = sorted(data.select_dtypes(include=['object']).columns.tolist())
         container3 = st.container(border=True)
@@ -167,6 +179,7 @@ if uploaded_file is not None:
             container3.subheader('✔️ Topic Modeling', divider='blue', anchor=False)
             container3.write('Congratulations! You can use Topic Modeling')
 
+    with col2:   
         #===Burst===
         container4 = st.container(border=True)
         if not coldf or 'Year' not in data.columns:
@@ -176,7 +189,6 @@ if uploaded_file is not None:
             container4.subheader('✔️ Burst Detection', divider='blue', anchor=False)
             container4.write('Congratulations! You can use Burst Detection')
 
-    with col3:
         #===bidirected===    
         container5 = st.container(border=True)        
         if not keycheck:
@@ -194,3 +206,31 @@ if uploaded_file is not None:
         else:
             container6.subheader('✔️ Scattertext', divider='blue', anchor=False)
             container6.write('Congratulations! You can use Scattertext')
+
+    with col3:
+        #===shifterator===
+        container7 = st.container(border=True)   
+        if not coldf or data.shape[0] < 2:
+            container7.subheader('❌ Shifterator', divider='red', anchor=False)
+            container7.write("Unfortunately, you don't have a column containing object in your data. Please check again.")
+        else:
+            container7.subheader('✔️ Shifterator', divider='blue', anchor=False)
+            container7.write('Congratulations! You can use Shifterator')
+        
+        #===sentiment===
+        container8 = st.container(border=True)   
+        if not coldf or data.shape[0] < 2:
+            container8.subheader('❌ Sentiment Analysis', divider='red', anchor=False)
+            container8.write("Unfortunately, you don't have a column containing object in your data. Please check again.")
+        else:
+            container8.subheader('✔️ Sentiment Analysis', divider='blue', anchor=False)
+            container8.write('Congratulations! You can use Sentiment Analysis')
+        
+        #===wordcloud===
+        container9 = st.container(border=True)   
+        if not coldf or data.shape[0] < 2:
+            container9.subheader('❌ Wordcloud', divider='red', anchor=False)
+            container9.write("Unfortunately, you don't have a column containing object in your data. Please check again.")
+        else:
+            container9.subheader('✔️ Wordcloud', divider='blue', anchor=False)
+            container9.write('Congratulations! You can use Wordcloud')
