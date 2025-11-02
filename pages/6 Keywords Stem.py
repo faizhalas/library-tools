@@ -14,7 +14,6 @@ from io import StringIO
 from nltk.stem.snowball import SnowballStemmer
 import csv
 import sys
-import json
 from tools import sourceformat as sf
 
 #===config===
@@ -45,7 +44,60 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
+    st.page_link("pages/9 WordCloud.py", label = "WordCloud", icon = "9️⃣")
     
+with st.expander("Before you start", expanded = True):
+    tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Result"])
+    with tab1:
+        st.write("This approach is effective for locating basic words and aids in catching the true meaning of the word, which can lead to improved semantic analysis and comprehension of the text. Some people find it difficult to check keywords before performing bibliometrics (using software such as VOSviewer and Bibliometrix). This strategy makes it easy to combine and search for fundamental words from keywords, especially if you have a large number of keywords. To do stemming or lemmatization on other text, change the column name to 'Keyword' in your file.")
+        st.divider()
+        st.write('💡 The idea came from this:')
+        st.write('Santosa, F. A. (2022). Prior steps into knowledge mapping: Text mining application and comparison. Issues in Science and Technology Librarianship, 102. https://doi.org/10.29173/istl2736')
+        
+    with tab2:
+        st.text("1. Put your file.")
+        st.text("2. Choose your preferable method. Picture below may help you to choose wisely.")
+        st.markdown("![Source: https://studymachinelearning.com/stemming-and-lemmatization/](https://studymachinelearning.com/wp-content/uploads/2019/09/stemmin_lemm_ex-1.png)")
+        st.text('Source: https://studymachinelearning.com/stemming-and-lemmatization/')
+        st.text("3. Now you need to select what kind of keywords you need.")
+        st.text("4. Finally, you can download and use the file on VOSviewer, Bibliometrix, or put it on OpenRefine to get better result!")
+        st.error("Please check what has changed. It's possible some keywords failed to find their roots.", icon="🚨")
+        
+    with tab3:
+        st.code("""
+        +----------------+------------------------+---------------------------------+
+        |     Source     |       File Type        |             Column              |
+        +----------------+------------------------+---------------------------------+
+        | Scopus         | Comma-separated values | Author Keywords                 |
+        |                | (.csv)                 | Index Keywords                  |
+        +----------------+------------------------+---------------------------------+
+        | Web of Science | Tab delimited file     | Author Keywords                 |
+        |                | (.txt)                 | Keywords Plus                   |
+        +----------------+------------------------+---------------------------------+
+        | Lens.org       | Comma-separated values | Keywords (Scholarly Works)      |
+        |                | (.csv)                 |                                 |
+        +----------------+------------------------+---------------------------------+
+        | Dimensions     | Comma-separated values | MeSH terms                      |
+        |                | (.csv)                 |                                 |
+        +----------------+------------------------+---------------------------------+
+        | OpenAlex       | Comma-separated values | Keywords                        |
+        |                | (.csv)                 |                                 |
+        +----------------+------------------------+---------------------------------+
+        | Other          | .csv .xls .xlsx        | Change your column to 'Keyword' |
+        +----------------+------------------------+---------------------------------+
+        | Hathitrust     | .json                  | htid (Hathitrust ID)            |
+        +----------------+------------------------+---------------------------------+
+        """, language=None)
+
+    with tab4:
+        st.subheader(':blue[Result]', anchor=False)
+        st.button('Click to download result 👈.')
+        st.text("Go to Result and click Download button.")  
+
+        st.divider()
+        st.subheader(':blue[List of Keywords]', anchor=False)
+        st.button('Click to download keywords 👈.')
+        st.text("Go to List of Keywords and click Download button.")  
 
 st.header("Keywords Stem", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -64,7 +116,7 @@ def get_ext(extype):
 def upload(extype):
     keywords = pd.read_csv(uploaded_file)
 
-    if "dimensions" in uploaded_file.name.lower():
+    if "About the data" in keywords.columns[0]:
         keywords = sf.dim(keywords)
         col_dict = {'MeSH terms': 'Keywords',
         'PubYear': 'Year',
@@ -73,36 +125,35 @@ def upload(extype):
         }
         keywords.rename(columns=col_dict, inplace=True)
 
-    return keywords
+    elif "ids.openalex" in keywords.columns:
+        keywords.rename(columns={'keywords.display_name': 'Keywords'}, inplace=True)
+        keywords["Keywords"] = keywords["Keywords"].astype(str).str.replace("|", "; ")
 
+    return keywords
+    
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
-        file = uploaded_file
-        papers = sf.medline(file)
-
-    elif("hathi" in uploaded_file.name.lower()):
-        papers = pd.read_csv(uploaded_file,sep = '\t')
+    if("PMID" in (uploaded_file.read()).decode()):
+        uploaded_file.seek(0)
+        papers = sf.medline(uploaded_file)
+        print(papers)
+        return papers
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DE': 'Author Keywords',
+            'DT': 'Document Type',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',
+            'ID': 'Keywords Plus',
+            'rights_date_used': 'Year'}
+    uploaded_file.seek(0)
+    papers = pd.read_csv(uploaded_file, sep='\t')
+    if("htid" in papers.columns):
         papers = sf.htrc(papers)
-        col_dict={'title': 'title',
-        'rights_date_used': 'Year',
-        }
-        papers.rename(columns=col_dict, inplace=True)
-        
-    else:
-        col_dict = {'TI': 'Title',
-                'SO': 'Source title',
-                'DE': 'Author Keywords',
-                'DT': 'Document Type',
-                'AB': 'Abstract',
-                'TC': 'Cited by',
-                'PY': 'Year',
-                'ID': 'Keywords Plus'}
-        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-        papers.rename(columns=col_dict, inplace=True)
+    papers.rename(columns=col_dict, inplace=True)
     print(papers)
     return papers
-
 
 @st.cache_data(ttl=3600)
 def rev_conv_txt(extype):
@@ -137,26 +188,40 @@ def conv_pub(extype):
     return keywords
 
 @st.cache_data(ttl=3600)
+def readxls(file):
+    papers = pd.read_excel(uploaded_file, sheet_name=0, engine='openpyxl')
+    if "About the data" in papers.columns[0]:
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
+    
+    return papers
+
+@st.cache_data(ttl=3600)
 def get_data(extype):
     list_of_column_key = list(keywords.columns)
     list_of_column_key = [k for k in list_of_column_key if 'Keyword' in k]
     return list_of_column_key
 
-uploaded_file = st.file_uploader('', type=['csv','txt','json','tar.gz','xml'], on_change=reset_data)
+uploaded_file = st.file_uploader('', type=['csv', 'txt', 'json', 'tar.gz', 'xml', 'xls', 'xlsx'], on_change=reset_data)
 
 if uploaded_file is not None:
     try:
         extype = get_ext(uploaded_file)
         if extype.endswith('.csv'):
-            keywords = upload(extype) 
-                      
+            keywords = upload(extype)        
         elif extype.endswith('.txt'):
             keywords = conv_txt(extype)
-
         elif extype.endswith('.json'):
             keywords = conv_json(extype)
         elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
             keywords = conv_pub(uploaded_file)
+        elif extype.endswith(('.xls', '.xlsx')):
+            papers = readxls(uploaded_file)
 
         list_of_column_key = get_data(extype)
     
@@ -229,7 +294,7 @@ if uploaded_file is not None:
         st.divider()
               
         #===show & download csv===
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📥 Result", "📥 List of Keywords", "📃 Reference", "📃 Recommended Reading", "⬇️ Download Help"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📥 Result", "📥 List of Keywords", "📃 Reference", "📃 Recommended Reading"])
          
         with tab1:
             st.dataframe(keywords, use_container_width=True, hide_index=True)
@@ -244,7 +309,7 @@ if uploaded_file is not None:
             if extype.endswith('.csv'):
                 csv = convert_df(extype)
                 st.download_button(
-                    "Press to download result 👈",
+                    "Click to download result 👈",
                     csv,
                     "result.csv",
                     "text/csv")
@@ -253,7 +318,7 @@ if uploaded_file is not None:
                 keywords = rev_conv_txt(extype)
                 txt = convert_txt(extype)
                 st.download_button(
-                    "Press to download result 👈",
+                    "Click to download result 👈",
                     txt,
                     "result.txt",
                     "text/csv")    
@@ -271,7 +336,7 @@ if uploaded_file is not None:
                     return 'background-color: yellow'
                 return '' 
             keytab = table_keyword(extype) 
-            st.dataframe(keytab.style.applymap(highlight_cells, subset=['new']), use_container_width=True, hide_index=True)
+            st.dataframe(keytab.style.map(highlight_cells, subset=['new']), use_container_width=True, hide_index=True)
                       
             @st.cache_data(ttl=3600)
             def convert_dfs(extype):
@@ -280,7 +345,7 @@ if uploaded_file is not None:
             csv = convert_dfs(extype)
     
             st.download_button(
-                "Press to download keywords 👈",
+                "Click to download keywords 👈",
                 csv,
                 "keywords.csv",
                 "text/csv")
@@ -291,19 +356,8 @@ if uploaded_file is not None:
         with tab4:
             st.markdown('**Beri, A. (2021, January 27). Stemming vs Lemmatization. Medium.** https://towardsdatascience.com/stemming-vs-lemmatization-2daddabcb221')
             st.markdown('**Khyani, D., Siddhartha B S, Niveditha N M, &amp; Divya B M. (2020). An Interpretation of Lemmatization and Stemming in Natural Language Processing. Journal of University of Shanghai for Science and Technology , 22(10), 350–357.**  https://jusst.org/an-interpretation-of-lemmatization-and-stemming-in-natural-language-processing/')
-            st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Text Pre-Processing. Text Mining for Information Professionals, 79–103.** https://doi.org/10.1007/978-3-030-85085-2_3')
-
-        with tab5:
-            st.subheader(':blue[Result]', anchor=False)
-            st.button('Press to download result 👈')
-            st.text("Go to Result and click Download button.")  
-
-            st.divider()
-            st.subheader(':blue[List of Keywords]', anchor=False)
-            st.button('Press to download keywords 👈')
-            st.text("Go to List of Keywords and click Download button.") 
+            st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Text Pre-Processing. Text Mining for Information Professionals, 79–103.** https://doi.org/10.1007/978-3-030-85085-2_3')         
             
-    except:
+    except Exception as e:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
-        st.stop()     
-
+        st.stop()
