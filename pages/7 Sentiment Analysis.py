@@ -47,7 +47,56 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
+    st.page_link("pages/9 WordCloud.py", label = "WordCloud", icon = "9️⃣")
 
+with st.expander("Before you start", expanded = True):
+    tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download"])
+    with tab1:
+        st.write('Sentiment analysis uses natural language processing to identify patterns in large text datasets, revealing the writer’s opinions, emotions, and attitudes. It assesses subjectivity (objective vs. subjective), polarity (positive, negative, neutral), and emotions (e.g., anger, joy, sadness, surprise, jealousy).') 
+        st.divider()
+        st.write('💡 The idea came from this:')
+        st.write('Lamba, M., & Madhusudhan, M. (2021, July 31). Sentiment Analysis. Text Mining for Information Professionals, 191–211. https://doi.org/10.1007/978-3-030-85085-2_7')
+        
+    with tab2:
+        st.write("1. Put your file. Choose your prefered column to analyze")
+        st.write("2. Choose your preferred method and decide which words you want to remove")
+        st.write("3. Finally, you can visualize your data.")
+        
+    with tab3:
+        st.code("""
+        +----------------+------------------------+----------------------------------+
+        |     Source     |       File Type        |              Column              |
+        +----------------+------------------------+----------------------------------+
+        | Scopus         | Comma-separated values | Choose your preferred column     |
+        |                | (.csv)                 | that you have                    |
+        +----------------+------------------------|                                  |
+        | Web of Science | Tab delimited file     |                                  |
+        |                | (.txt)                 |                                  |
+        +----------------+------------------------|                                  |
+        | Lens.org       | Comma-separated values |                                  |
+        |                | (.csv)                 |                                  |
+        +----------------+------------------------|                                  |
+        | Dimensions     | Comma-separated values |                                  |
+        |                | (.csv)                 |                                  |
+        +----------------+------------------------|                                  |
+        | OpenAlex       | Comma-separated values |                                  |
+        |                | (.csv)                 |                                  |
+        +----------------+------------------------|                                  |
+        | Other          | .csv .xls .xlsx        |                                  |
+        +----------------+------------------------|                                  |
+        | Hathitrust     | .json                  |                                  |
+        +----------------+------------------------+----------------------------------+
+        """, language=None)
+        
+    with tab4:
+        st.subheader(':blue[Sentiment Analysis]', anchor=False)
+        st.write("Click the three dots at the top right then select the desired format")
+        st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_sentiment.png)")
+        st.divider()
+        st.subheader(':blue[CSV Results]', anchor=False)
+        st.text("Click Download button")
+        st.markdown("![Downloading results](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentitable.png)")
+        
 st.header("Sentiment Analysis", anchor=False)
 st.subheader('Put your file here...', anchor=False)
 
@@ -68,8 +117,6 @@ def get_ext(uploaded_file):
     return extype
 
 #===clear cache===
-
-
 def reset_all():
     st.cache_data.clear()
 
@@ -80,7 +127,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 @st.cache_data(ttl=3600)
 def upload(file):
     papers = pd.read_csv(uploaded_file)
-    if "dimensions" in uploaded_file.name.lower():
+    
+    if "About the data" in papers.columns[0]:
         papers = sf.dim(papers)
         col_dict = {'MeSH terms': 'Keywords',
         'PubYear': 'Year',
@@ -88,36 +136,33 @@ def upload(file):
         'Publication Type': 'Document Type'
         }
         papers.rename(columns=col_dict, inplace=True)
+
+    
     return papers
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
-        file = uploaded_file
-        papers = sf.medline(file)
-
-    elif("hathi" in uploaded_file.name.lower()):
-        papers = pd.read_csv(uploaded_file,sep = '\t')
+    if("PMID" in (uploaded_file.read()).decode()):
+        uploaded_file.seek(0)
+        papers = sf.medline(uploaded_file)
+        print(papers)
+        return papers
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DE': 'Author Keywords',
+            'DT': 'Document Type',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',
+            'ID': 'Keywords Plus',
+            'rights_date_used': 'Year'}
+    uploaded_file.seek(0)
+    papers = pd.read_csv(uploaded_file, sep='\t')
+    if("htid" in papers.columns):
         papers = sf.htrc(papers)
-        col_dict={'title': 'title',
-        'rights_date_used': 'Year',
-        }
-        papers.rename(columns=col_dict, inplace=True)
-        
-    else:
-        col_dict = {'TI': 'Title',
-                'SO': 'Source title',
-                'DE': 'Author Keywords',
-                'DT': 'Document Type',
-                'AB': 'Abstract',
-                'TC': 'Cited by',
-                'PY': 'Year',
-                'ID': 'Keywords Plus'}
-        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-        papers.rename(columns=col_dict, inplace=True)
+    papers.rename(columns=col_dict, inplace=True)
     print(papers)
     return papers
-
 
 @st.cache_data(ttl=3600)
 def conv_json(extype):
@@ -143,8 +188,22 @@ def conv_pub(extype):
         keywords = sf.readxml(bytedata)
     return keywords
 
+@st.cache_data(ttl=3600)
+def readxls(file):
+    papers = pd.read_excel(uploaded_file, sheet_name=0, engine='openpyxl')
+    if "About the data" in papers.columns[0]:
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
+    
+    return papers
+
 #===Read data===
-uploaded_file = st.file_uploader('', type=['csv', 'txt','json','tar.gz', 'xml'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt', 'json', 'tar.gz', 'xml', 'xls', 'xlsx'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
@@ -154,11 +213,12 @@ if uploaded_file is not None:
              papers = upload(extype) 
         elif extype.endswith('.txt'):
              papers = conv_txt(extype)
-
         elif extype.endswith('.json'):
             papers = conv_json(extype)
         elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
             papers = conv_pub(uploaded_file)
+        elif extype.endswith(('.xls', '.xlsx')):
+            papers = readxls(uploaded_file)
 
         coldf = sorted(papers.select_dtypes(include=['object']).columns.tolist())
             
@@ -319,7 +379,7 @@ if uploaded_file is not None:
             neut.sort_values(by=["size"], inplace = True, ascending = False, ignore_index = True)
             neut = neut.truncate(after = wordcount)
 
-            tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
+            tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
             with tab1:
                 #display tables and graphs
     
@@ -351,19 +411,7 @@ if uploaded_file is not None:
 
             with tab3:
                 st.markdown('**Lamba, M., & Madhusudhan, M. (2021, July 31). Sentiment Analysis. Text Mining for Information Professionals, 191–211.** https://doi.org/10.1007/978-3-030-85085-2_7')
-
-            with tab4:
-                st.subheader(':blue[Sentiment Analysis]', anchor=False)
-                st.write("Click the three dots at the top right then select the desired format")
-                st.markdown("![Downloading visualization](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/download_sentiment.png)")
-                st.divider()
-                st.subheader(':blue[CSV Results]', anchor=False)
-                st.text("Click Download button")
-                st.markdown("![Downloading results](https://raw.githubusercontent.com/faizhalas/library-tools/main/images/sentitable.png)")
-
-    
-    except Exception as e:
    
+    except Exception as e:
         st.error("Please ensure that your file is correct. Please contact us if you find that this is an error.", icon="🚨")
         st.stop()
-
