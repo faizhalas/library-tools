@@ -15,10 +15,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 import sys
-import json
 from tools import sourceformat as sf
-
-
 #===config===
 st.set_page_config(
     page_title="Coconut",
@@ -47,6 +44,62 @@ with st.popover("🔗 Menu"):
     st.page_link("pages/6 Keywords Stem.py", label="Keywords Stem", icon="6️⃣")
     st.page_link("pages/7 Sentiment Analysis.py", label="Sentiment Analysis", icon="7️⃣")
     st.page_link("pages/8 Shifterator.py", label="Shifterator", icon="8️⃣")
+    st.page_link("pages/9 WordCloud.py", label = "WordCloud", icon = "9️⃣")
+
+with st.expander("Before you start", expanded = True):
+    tab1, tab2, tab3, tab4 = st.tabs(["Prologue", "Steps", "Requirements", "Download Visualization"])
+    with tab1:
+        st.write("Burst detection identifies periods when a specific event occurs with unusually high frequency, referred to as 'bursty'. This method can be applied to identify bursts in a continuous stream of events or in discrete groups of events (such as poster title submissions to an annual conference).") 
+        st.divider()
+        st.write('💡 The idea came from this:') 
+        st.write('Kleinberg, J. (2002). Bursty and hierarchical structure in streams. Knowledge Discovery and Data Mining. https://doi.org/10.1145/775047.775061')
+                    
+    with tab2:
+        st.text("1. Put your file. Choose your preferred column to analyze.")
+        st.text("2. Choose your preferred method to compare.")
+        st.text("3. Finally, you can visualize your data.")
+        st.error("This app includes lemmatization and stopwords. Currently, we only offer English words.", icon="💬")
+
+    with tab3:
+        st.code("""
+        +----------------+------------------------+----------------------------------+
+        |     Source     |       File Type        |              Column              |
+        +----------------+------------------------+----------------------------------+
+        | Scopus         | Comma-separated values | Choose your preferred column     |
+        |                | (.csv)                 | that you have to analyze and     |
+        +----------------+------------------------| and need a column called "Year"  |
+        | Web of Science | Tab delimited file     |                                  |
+        |                | (.txt)                 |                                  |
+        +----------------+------------------------|                                  |
+        | Lens.org       | Comma-separated values |                                  |
+        |                | (.csv)                 |                                  |
+        +----------------+------------------------|                                  |
+        | Dimensions     | Comma-separated values |                                  |
+        |                | (.csv)                 |                                  |
+        +----------------+------------------------|                                  |
+        | OpenAlex       | Comma-separated values |                                  |
+        |                | (.csv)                 |                                  |
+        +----------------+------------------------|                                  |
+        | Other          | .csv .xls .xlsx        |                                  |
+        +----------------+------------------------|                                  |
+        | Hathitrust     | .json                  |                                  |
+        +----------------+------------------------+----------------------------------+
+        """, language=None)
+                
+    with tab4:
+        st.subheader(':blue[Burst Detection]', anchor=False)
+        st.button('📊 Download high resolution image.')
+        st.text("Click download button.") 
+
+        st.divider()
+        st.subheader(':blue[Top words]', anchor=False)
+        st.button('👉 Click to download list of top words.')
+        st.text("Click download button.")  
+
+        st.divider()
+        st.subheader(':blue[Burst]', anchor=False)
+        st.button('👉 Click to download the list of detected bursts.')
+        st.text("Click download button.") 
 
 st.header("Burst Detection", anchor=False)
 st.subheader('Put your file here...', anchor=False)
@@ -64,8 +117,9 @@ def upload(extype):
     #lens.org
     if 'Publication Year' in df.columns:
                df.rename(columns={'Publication Year': 'Year', 'Citing Works Count': 'Cited by',
-                                     'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
-    if "dimensions" in uploaded_file.name.lower():
+                                  'Publication Type': 'Document Type', 'Source Title': 'Source title'}, inplace=True)
+        
+    elif "About the data" in df.columns[0]:
         df = sf.dim(df)
         col_dict = {'MeSH terms': 'Keywords',
         'PubYear': 'Year',
@@ -73,7 +127,10 @@ def upload(extype):
         'Publication Type': 'Document Type'
         }
         df.rename(columns=col_dict, inplace=True)
-    
+        
+    elif "ids.openalex" in df.columns:
+        df.rename(columns={'publication_year': 'Year'}, inplace=True)
+        
     return df
 
 @st.cache_data(ttl=3600)
@@ -90,20 +147,25 @@ def get_minmax(df):
 
 @st.cache_data(ttl=3600)
 def conv_txt(extype):
-    if("pmc" in uploaded_file.name.lower() or "pubmed" in uploaded_file.name.lower()):
-        file = uploaded_file
-        papers = sf.medline(file)
-    else:
-        col_dict = {'TI': 'Title',
-                'SO': 'Source title',
-                'DE': 'Author Keywords',
-                'DT': 'Document Type',
-                'AB': 'Abstract',
-                'TC': 'Cited by',
-                'PY': 'Year',
-                'ID': 'Keywords Plus'}
-        papers = pd.read_csv(uploaded_file, sep='\t', lineterminator='\r')
-        papers.rename(columns=col_dict, inplace=True)
+    if("PMID" in (uploaded_file.read()).decode()):
+        uploaded_file.seek(0)
+        papers = sf.medline(uploaded_file)
+        print(papers)
+        return papers
+    col_dict = {'TI': 'Title',
+            'SO': 'Source title',
+            'DE': 'Author Keywords',
+            'DT': 'Document Type',
+            'AB': 'Abstract',
+            'TC': 'Cited by',
+            'PY': 'Year',
+            'ID': 'Keywords Plus',
+            'rights_date_used': 'Year'}
+    uploaded_file.seek(0)
+    papers = pd.read_csv(uploaded_file, sep='\t')
+    if("htid" in papers.columns):
+        papers = sf.htrc(papers)
+    papers.rename(columns=col_dict, inplace=True)
     print(papers)
     return papers
 
@@ -128,6 +190,20 @@ def conv_pub(extype):
         bytedata = extype.read()
         keywords = sf.readxml(bytedata)
     return keywords
+
+@st.cache_data(ttl=3600)
+def readxls(file):
+    papers = pd.read_excel(uploaded_file, sheet_name=0, engine='openpyxl')
+    if "About the data" in papers.columns[0]:
+        papers = sf.dim(papers)
+        col_dict = {'MeSH terms': 'Keywords',
+        'PubYear': 'Year',
+        'Times cited': 'Cited by',
+        'Publication Type': 'Document Type'
+        }
+        papers.rename(columns=col_dict, inplace=True)
+    
+    return papers
 
 # Helper Functions
 @st.cache_data(ttl=3600)
@@ -155,6 +231,8 @@ def load_data(uploaded_file):
         df = conv_json(extype)
     elif extype.endswith('.tar.gz') or extype.endswith('.xml'):
         df = conv_pub(uploaded_file)
+    elif extype.endswith(('.xls', '.xlsx')):
+        df = readxls(extype)
 
     df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
     df = df.dropna(subset=['Year'])
@@ -429,8 +507,7 @@ def linegraph(bursts, freq_data, top_n, running_total=""):
                 align=align_value,
                 valign=valign_value,
                 textangle=270,
-                row=row, col=col
-            )
+                row=row, col=col)
 
         col += 1
         if col > 2:
@@ -468,14 +545,14 @@ def download_result(freq_data, bursts):
     csv2 = convert_df(bursts)
     return csv1, csv2
       
-uploaded_file = st.file_uploader('', type=['csv', 'txt','json','tar.gz','xml'], on_change=reset_all)
+uploaded_file = st.file_uploader('', type=['csv', 'txt', 'json', 'tar.gz', 'xml', 'xls', 'xlsx'], on_change=reset_all)
 
 if uploaded_file is not None:
     try:
         c1, c2, c3 = st.columns([3,3,4])
         top_n = c1.number_input("Number of top words to analyze", min_value=5, value=10, step=1, on_change=reset_all)
         viz_selected = c2.selectbox("Option for visualization",
-            ("Line graph", "Scatter plot"), on_change=reset_all)
+            ("Line graph", "Heatmap"), on_change=reset_all)
         running_total = c3.selectbox("Calculation method",
             ("Running total", "By occurrences each year"), on_change=reset_all)
         count_method = c1.selectbox("Count by",
@@ -502,7 +579,7 @@ if uploaded_file is not None:
         
         bursts, freq_data, num_unique_labels, num_rows = apply_burst_detection(top_words, yearly_term_frequency)
 
-        tab1, tab2, tab3, tab4 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading", "⬇️ Download Help"])
+        tab1, tab2, tab3 = st.tabs(["📈 Generate visualization", "📃 Reference", "📓 Recommended Reading"])
 
         with tab1:        
             if bursts.empty:
@@ -517,7 +594,7 @@ if uploaded_file is not None:
                 if viz_selected == "Line graph": 
                     linegraph(bursts, freq_data, top_n)
                     
-                elif viz_selected =="Scatter plot":
+                elif viz_selected =="Heatmap":
                     scattervis(bursts, freq_data, top_n)
                 
                 csv1, csv2 = download_result(freq_data, bursts)
@@ -530,13 +607,13 @@ if uploaded_file is not None:
                         mime="image/png")
                     
                 e2.download_button(
-                    "👉 Press to download list of top words",
+                    "👉 Click to download list of top words",
                     csv1,
                     "top-keywords.csv",
                     "text/csv")
     
                 e3.download_button(
-                    "👉 Press to download the list of detected bursts",
+                    "👉 Click to download the list of detected bursts",
                     csv2,
                     "burst.csv",
                     "text/csv")
@@ -549,22 +626,7 @@ if uploaded_file is not None:
             st.markdown('**Domicián Máté, Ni Made Estiyanti and Novotny, A. (2024) ‘How to support innovative small firms? Bibliometric analysis and visualization of start-up incubation’, Journal of Innovation and Entrepreneurship, 13(1).** https://doi.org/10.1186/s13731-024-00361-z')
             st.markdown('**Lamba, M., Madhusudhan, M. (2022). Burst Detection. In: Text Mining for Information Professionals. Springer, Cham.** https://doi.org/10.1007/978-3-030-85085-2_6')
             st.markdown('**Santosa, F. A. (2025). Artificial Intelligence in Library Studies: A Textual Analysis. JLIS.It, 16(1).** https://doi.org/10.36253/jlis.it-626')
-        
-        with tab4:
-            st.subheader(':blue[Burst Detection]', anchor=False)
-            st.button('📊 Download high resolution image', on_click=None)
-            st.text("Click download button.") 
-
-            st.divider()
-            st.subheader(':blue[Top words]', anchor=False)
-            st.button('👉 Press to download list of top words', on_click=None)
-            st.text("Click download button.")  
-
-            st.divider()
-            st.subheader(':blue[Burst]', anchor=False)
-            st.button('👉 Press to download the list of detected bursts', on_click=None)
-            st.text("Click download button.")
-            
+                     
     except Exception as e:
         st.error("Please ensure that your file or settings are correct. If you think there is a mistake, feel free to reach out to us!", icon="🚨")
         st.stop()
